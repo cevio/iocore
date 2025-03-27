@@ -1,0 +1,21 @@
+{
+  "name": "@iocore/component",
+  "version": "1.0.0",
+  "description": "The Next-Generation Inversion of Control (IoC) Framework for Modern Applications.",
+  "more": "Empower your codebase with a lightweight, flexible, and highly performant dependency injection system. Built for developers who demand modularity and scalability, `​iocore` seamlessly integrates with TypeScript, JavaScript, and modern frameworks, enabling you to decouple components, streamline testing, and accelerate enterprise-grade development. Harness the power of true inversion of control, and let your architecture evolve effortlessly.",
+  "main": "dist/index.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "fix": "fix-esm-import-path --preserve-import-type ./dist",
+    "build": "rm -rf ./dist && mkdir ./dist && tsc -d && npm run fix"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "fix-esm-import-path": "^1.10.1"
+  }
+}
