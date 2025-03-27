@@ -1,0 +1,20 @@
+{
+  "name": "@template/default",
+  "version": "1.0.0",
+  "description": "Default Monorepo template",
+  "main": "dist/index.js",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "fix": "fix-esm-import-path --preserve-import-type ./dist",
+    "build": "rm -rf ./dist && mkdir ./dist && tsc -d && npm run fix"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "fix-esm-import-path": "^1.10.1"
+  }
+}
