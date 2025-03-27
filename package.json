@@ -9,10 +9,12 @@
     "dist"
   ],
   "scripts": {
-    "pub": "npm run build && git add . && git commit -am 'update' && git push",
+    "pub": "git add . && git commit -am 'update' && git push",
     "init": "pnpm i --registry=https://registry.npmmirror.com/",
     "update": "pnpm update --registry=https://registry.npmmirror.com/",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "changes": "pnpm changeset",
+    "publish": "pnpm changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.28.1",

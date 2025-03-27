@@ -12,6 +12,9 @@
     "fix": "fix-esm-import-path --preserve-import-type ./dist",
     "build": "rm -rf ./dist && mkdir ./dist && tsc -d && npm run fix"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "reflect-metadata": "^0.2.2"
   },
