@@ -2,7 +2,7 @@ import { Meta } from "./meta";
 import { INewAble } from "./types";
 import { Wrap } from "./wrap";
 
-const NativeComponents = new Map<INewAble, Wrap>();
+export const NativeComponents = new Map<INewAble, Wrap>();
 
 export class Component {
   static readonly InjectNameSpace = Symbol('#Component:Inject');
@@ -35,8 +35,10 @@ export class Component {
       NativeComponents.set(clazz, wrap);
     }
 
-    await wrap.load();
+    await wrap.start();
 
-    return wrap.isSingleton ? wrap.instance : await wrap.create();
+    return wrap.isSingleton
+      ? wrap.context.value
+      : await wrap.create();
   }
 }
