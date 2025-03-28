@@ -1,7 +1,7 @@
 import { Component } from './component';
 import { Meta } from './meta';
 import { INewAble } from './types';
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from './events';
 
 export class Wrap<T extends Component = Component> extends EventEmitter {
   private readonly clazz: INewAble<T>;
@@ -17,7 +17,6 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
 
   constructor(clazz: INewAble<T>) {
     super();
-    this.setMaxListeners(+Infinity);
     this.meta = Meta.get(clazz);
 
     if (!this.meta.clazz.has(Component.InjectableNameSpace)) {
@@ -81,7 +80,7 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
       }
     }).then(() => {
       this.status = 2;
-      this.emit('ok');
+      return this.emit('ok');
     });
   }
 
