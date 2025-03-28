@@ -1,5 +1,5 @@
 import npmlog from 'npmlog';
 
-npmlog.heading = 'lerna';
+npmlog.heading = 'incore';
 
 export const logger = npmlog;

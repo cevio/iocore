@@ -1,0 +1,1 @@
+export const registry = 'https://registry.npmmirror.com/';

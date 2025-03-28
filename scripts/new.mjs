@@ -7,6 +7,7 @@ import { readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
+import { registry } from './configs.mjs';
 
 const prompt = createPromptModule();
 const require = createRequire(import.meta.url)
@@ -35,7 +36,7 @@ if (!directories) {
 
   logger.info('-', 'installing ...');
   const error = await new Promise((resolve) => {
-    const ls = spawn('pnpm', ['i', '--registry=https://registry.npmmirror.com/'], {
+    const ls = spawn('pnpm', ['i', '--registry=' + registry], {
       cwd: process.cwd(),
       env: process.env,
     })

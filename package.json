@@ -15,7 +15,8 @@
     "build": "pnpm -r run build",
     "changes": "pnpm changeset",
     "publish": "pnpm changeset publish",
-    "new": "node scripts/new.mjs -trace-warnings"
+    "new": "node scripts/new.mjs -trace-warnings",
+    "install": "node scripts/install.mjs -trace-warnings"
   },
   "devDependencies": {
     "@changesets/cli": "^2.28.1",
