@@ -1,6 +1,6 @@
 {
   "name": "@iocore/component",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Next-Generation Inversion of Control (IoC) Framework for Modern Applications.",
   "more": "Empower your codebase with a lightweight, flexible, and highly performant dependency injection system. Built for developers who demand modularity and scalability, `​iocore` seamlessly integrates with TypeScript, JavaScript, and modern frameworks, enabling you to decouple components, streamline testing, and accelerate enterprise-grade development. Harness the power of true inversion of control, and let your architecture evolve effortlessly.",
   "main": "dist/index.js",
