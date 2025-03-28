@@ -26,6 +26,13 @@ export class Component {
   static readonly Singleton = Meta.createClassDecorator(Component.SingletonNameSpace, () => true);
 
   static async create<T extends Component>(clazz: INewAble<T>) {
+    const wrap = await Component.preload(clazz);
+    return wrap.isSingleton
+      ? wrap.context.value
+      : await wrap.create();
+  }
+
+  static async preload<T extends Component>(clazz: INewAble<T>) {
     let wrap: Wrap;
 
     if (NativeComponents.has(clazz)) {
@@ -37,8 +44,6 @@ export class Component {
 
     await wrap.start();
 
-    return wrap.isSingleton
-      ? wrap.context.value
-      : await wrap.create();
+    return wrap;
   }
 }
