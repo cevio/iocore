@@ -156,6 +156,7 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
     while (i--) {
       await Promise.resolve(this.context.callbacks[i]());
     }
+    this.context.clear();
   }
 
   public async create() {
