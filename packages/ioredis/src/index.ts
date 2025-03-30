@@ -14,7 +14,7 @@ export class IORedis extends Application {
   public conn: Redis;
   protected async initialize() {
     if (!process.env.IOREDIS_CONFIGS) {
-      throw new Error('`@iocore/ioredis` miss configs');
+      throw new Error('`@iocore/ioredis` miss configs: IOCORE_IOREDIS_CONFIGS');
     }
     const connection = new Redis(process.env.IOCORE_IOREDIS_CONFIGS);
 

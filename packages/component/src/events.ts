@@ -3,6 +3,11 @@ type ICallback = (...args: any[]) => unknown | Promise<unknown>;
 export class EventEmitter {
   private readonly stacks = new Map<string, Set<ICallback>>();
 
+  public reset() {
+    this.stacks.clear();
+    return this;
+  }
+
   public on(key: string, callback: ICallback) {
     if (!this.stacks.has(key)) {
       this.stacks.set(key, new Set());

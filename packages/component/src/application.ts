@@ -9,10 +9,10 @@ export abstract class Application extends Component {
 
   static readonly Server: ClassDecorator = target => {
     Application.Singleton(target);
-    Application.Injectable<Application>(async (application, wrap) => {
-      await Promise.resolve(application.initialize());
-      wrap.context.callbacks.push(() => application.terminate());
-      NativeApplications.push(wrap);
+    Application.Injectable<Application>(async ctx => {
+      await Promise.resolve(ctx.value.initialize());
+      ctx.callbacks.push(() => ctx.value.terminate());
+      NativeApplications.push(ctx.wrap);
     })(target);
   }
 

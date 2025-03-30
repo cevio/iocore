@@ -1,4 +1,4 @@
-import { Component } from './component';
+import { Component, IInjectableCallback } from './component';
 import { Meta } from './meta';
 import { INewAble } from './types';
 import { EventEmitter } from './events';
@@ -23,7 +23,7 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
   private readonly EVENT_OFFLINE_REJECT = 'offline:reject';
 
   public readonly meta: Meta;
-  public context = new Context<T>(this);
+  public context: Context<T>;
   public status: COMPONET_LIFECYCLE = COMPONET_LIFECYCLE.DEFINED;
   public error: any;
 
@@ -73,12 +73,16 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
         })
       case COMPONET_LIFECYCLE.INITING:
         return new Promise<void>((resolve, reject) => {
-          const resolveHandler = () => {
+          const handler = () => {
             this.off(this.EVENT_ONLINE_RESOLVE, resolveHandler);
+            this.off(this.EVENT_ONLINE_REJECT, rejectHandler);
+          }
+          const resolveHandler = () => {
+            handler();
             resolve();
           }
           const rejectHandler = () => {
-            this.off(this.EVENT_ONLINE_REJECT, rejectHandler);
+            handler();
             reject(this.error);
           }
           this.on(this.EVENT_ONLINE_RESOLVE, resolveHandler);
@@ -109,12 +113,16 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
         })
       case COMPONET_LIFECYCLE.ENDING:
         return new Promise<void>((resolve, reject) => {
-          const resolveHandler = () => {
+          const handler = () => {
             this.off(this.EVENT_OFFLINE_RESOLVE, resolveHandler);
+            this.off(this.EVENT_OFFLINE_REJECT, rejectHandler);
+          }
+          const resolveHandler = () => {
+            handler();
             resolve();
           }
           const rejectHandler = () => {
-            this.off(this.EVENT_OFFLINE_REJECT, rejectHandler);
+            handler();
             reject(this.error);
           }
           this.on(this.EVENT_OFFLINE_RESOLVE, resolveHandler);
@@ -146,25 +154,30 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
       }
 
       if (this.isSingleton) {
-        return this.create().then(component => this.context.value = component);
+        return this.create().then(component => {
+          this.context = component;
+        });
       }
     })
   }
 
   private async destroy() {
-    let i = this.context.callbacks.length;
-    while (i--) {
-      await Promise.resolve(this.context.callbacks[i]());
+    if (this.context) {
+      let i = this.context.callbacks.length;
+      while (i--) {
+        await Promise.resolve(this.context.callbacks[i]());
+      }
+      this.context.clear();
     }
-    this.context.clear();
   }
 
   public async create() {
-    const funcs: Function[] = this.meta.clazz.get(Component.InjectableNameSpace);
-    const target = new this.clazz();
+    const funcs: IInjectableCallback[] = this.meta.clazz.get(Component.InjectableNameSpace) || [];
+    const context = new Context(this);
+    context.value = new this.clazz();
     for (let i = 0; i < funcs.length; i++) {
-      await Promise.resolve(funcs[i](target, this));
+      await Promise.resolve(funcs[i](context));
     }
-    return target;
+    return context;
   }
 }
