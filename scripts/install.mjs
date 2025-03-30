@@ -70,7 +70,7 @@ for (let i = 0 ; i < directories.length; i++) {
   const { isprod } = await prompt([{
     type: 'confirm',
     name: 'isprod',
-    message: '是否是生成环境？'
+    message: '是否生产环境？'
   }])
 
   const cmd = ['add', ...answers, '--filter', target];
