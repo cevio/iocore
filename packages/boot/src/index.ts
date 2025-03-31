@@ -6,23 +6,12 @@ import { parse } from 'yaml';
 import { Logger } from '@iocore/logger';
 import { glob } from 'glob';
 
-const pushConfigsToProcessEnv = Symbol('#Boot.pushConfigsToProcessEnv');
-
 @Application.Server
-export abstract class Boot<T extends object = any> extends Application {
+export abstract class Boot extends Application {
   @Application.Inject(Logger)
-  protected readonly logger: Logger;
+  public readonly logger: Logger;
 
-  private [pushConfigsToProcessEnv]<T extends object = any>(configs: T) {
-    for (const key in configs) {
-      // @ts-ignore
-      process.env[key] = configs[key];
-    }
-  }
-
-  constructor(yaml: string | T) {
-    super();
-
+  static Strap<T extends object = any, U extends Boot = Boot>(yaml: string | T, clazz: INewAble<U>) {
     let configs: T = yaml as T;
 
     if (typeof yaml === 'string') {
@@ -33,21 +22,26 @@ export abstract class Boot<T extends object = any> extends Application {
       configs = parse(readFileSync(file, 'utf8')) as T;
     }
 
-    this[pushConfigsToProcessEnv](configs);
+    for (const key in configs) {
+      // @ts-ignore
+      process.env[key] = configs[key];
+    }
 
-    process.on('uncaughtException', e => this.logger.error(e));
-    process.on('unhandledRejection', e => this.logger.error(e));
-    process.on('uncaughtExceptionMonitor', e => this.logger.error(e));
-    process.on('error', e => this.logger.error(e));
+    Application.create(clazz).then(boot => {
+      process.on('uncaughtException', e => boot.logger.error(e));
+      process.on('unhandledRejection', e => boot.logger.error(e));
+      process.on('uncaughtExceptionMonitor', e => boot.logger.error(e));
+      process.on('error', e => boot.logger.error(e));
 
-    exitHook(exit => {
-      Application.terminate()
-        .catch(e => this.logger.error(e))
-        .finally(exit);
+      exitHook(exit => {
+        Application.terminate()
+          .catch(e => boot.logger.error(e))
+          .finally(exit);
+      })
     })
   }
 
-  public async preloadComponents(
+  public async preload(
     directory: string, suffix: string,
     callback?: (options: {
       file: string,
