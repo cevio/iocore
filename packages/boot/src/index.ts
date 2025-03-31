@@ -73,3 +73,5 @@ export abstract class Boot<T extends object = any> extends Application {
     }
   }
 }
+
+export default Boot;

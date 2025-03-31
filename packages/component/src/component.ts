@@ -20,24 +20,25 @@ export class Component {
     return Meta.createClassDecorator<IInjectableCallback<T>[]>(Component.InjectableNameSpace, ({ value }) => {
       const current = value ?? [];
       if (!callback) return current;
-      const index = current.indexOf(callback);
-      if (index === -1) current.push(callback);
+      if (!current.includes(callback)) {
+        current.push(callback);
+      }
       return current;
     })
   }
 
-  static async create<T extends Component>(clazz: INewAble<T>) {
+  static async create<T extends Component>(clazz: INewAble<T>): Promise<T> {
     const wrap = await Component.preload(clazz);
     if (wrap.isSingleton) return wrap.context.value;
     const ctx = await wrap.create();
     return ctx.value;
   }
 
-  static async preload<T extends Component>(clazz: INewAble<T>) {
-    let wrap: Wrap;
+  static async preload<T extends Component>(clazz: INewAble<T>): Promise<Wrap<T>> {
+    let wrap: Wrap<T>;
 
     if (NativeComponents.has(clazz)) {
-      wrap = NativeComponents.get(clazz);
+      wrap = NativeComponents.get(clazz) as Wrap<T>;
     } else {
       wrap = new Wrap(clazz);
       NativeComponents.set(clazz, wrap);
