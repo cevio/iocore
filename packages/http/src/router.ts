@@ -8,27 +8,27 @@ const HttpInComingBodyNamespace = Symbol('#Controller.InComing.Body');
 
 export class Router extends Component {
   static readonly InComing = Object.freeze({
-    Head(key?: string, ...callbacks: Function[]) {
+    Head(key?: string | Function, ...callbacks: Function[]) {
       return Meta.createPropertyDecorator(HttpInComingHeadNamespace, ({ property }) => {
         return {
-          callbacks,
-          key: key || property,
+          callbacks: typeof key === 'function' ? [key].concat(callbacks) : callbacks,
+          key: typeof key === 'string' ? key : property,
         }
       })
     },
-    Query(key?: string, ...callbacks: Function[]) {
+    Query(key?: string | Function, ...callbacks: Function[]) {
       return Meta.createPropertyDecorator(HttpInComingQueryNamespace, ({ property }) => {
         return {
-          callbacks,
-          key: key || property,
+          callbacks: typeof key === 'function' ? [key].concat(callbacks) : callbacks,
+          key: typeof key === 'string' ? key : property,
         }
       })
     },
-    Path(key?: string, ...callbacks: Function[]) {
+    Path(key?: string | Function, ...callbacks: Function[]) {
       return Meta.createPropertyDecorator(HttpInComingPathNamespace, ({ property }) => {
         return {
-          callbacks,
-          key: key || property,
+          callbacks: typeof key === 'function' ? [key].concat(callbacks) : callbacks,
+          key: typeof key === 'string' ? key : property,
         }
       })
     },
@@ -36,30 +36,31 @@ export class Router extends Component {
       return Meta.createPropertyDecorator(HttpInComingBodyNamespace, () => callbacks);
     }
   })
-}
 
-export function transformInComingMetadata(wrap: Wrap<Router>) {
-  const proxy = new Map<string | symbol, (ctx: Context) => () => Promise<any>>();
-  for (const [property, item] of wrap.meta.properties.entries()) {
-    if (item.has(HttpInComingHeadNamespace)) {
-      const { key, callbacks } = item.get(HttpInComingHeadNamespace);
-      proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.headers[key], callbacks));
-    } else if (item.has(HttpInComingQueryNamespace)) {
-      const { key, callbacks } = item.get(HttpInComingQueryNamespace);
-      proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.query[key], callbacks));
-    } else if (item.has(HttpInComingPathNamespace)) {
-      const { key, callbacks } = item.get(HttpInComingPathNamespace);
-      proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.params[key], callbacks));
-    } else if (item.has(HttpInComingBodyNamespace)) {
-      const callbacks = item.get(HttpInComingBodyNamespace);
-      // @ts-ignore
-      proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.request.body, callbacks));
+  static getInComing(wrap: Wrap<Router>) {
+    const proxy = new Map<string | symbol, (ctx: Context) => () => Promise<any>>();
+    for (const [property, item] of wrap.meta.properties.entries()) {
+      if (item.has(HttpInComingHeadNamespace)) {
+        const { key, callbacks } = item.get(HttpInComingHeadNamespace);
+        proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.headers[key], callbacks));
+      } else if (item.has(HttpInComingQueryNamespace)) {
+        const { key, callbacks } = item.get(HttpInComingQueryNamespace);
+        proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.query[key], callbacks));
+      } else if (item.has(HttpInComingPathNamespace)) {
+        const { key, callbacks } = item.get(HttpInComingPathNamespace);
+        proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.params[key], callbacks));
+      } else if (item.has(HttpInComingBodyNamespace)) {
+        const callbacks = item.get(HttpInComingBodyNamespace);
+        // @ts-ignore
+        proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.request.body, callbacks));
+      }
     }
-  }
-  return async (ctx: Context, controller: Component) => {
-    for (const [property, callback] of proxy.entries()) {
-      // @ts-ignore
-      controller[property] = await callback(ctx)();
+    return async (ctx: Context, controller: Component) => {
+      for (const [property, callback] of proxy.entries()) {
+        const fn = callback(ctx);
+        // @ts-ignore
+        controller[property] = await fn();
+      }
     }
   }
 }

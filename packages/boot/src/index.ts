@@ -24,7 +24,7 @@ export abstract class Boot extends Application {
 
     for (const key in configs) {
       // @ts-ignore
-      process.env[key] = configs[key];
+      process.env[key] = typeof configs[key] === 'string' ? configs[key] : JSON.stringify(configs[key]);
     }
 
     Application.create(clazz).then(boot => {

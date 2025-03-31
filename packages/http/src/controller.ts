@@ -1,4 +1,4 @@
-import { Component, Meta, Wrap } from '@iocore/component';
+import { Component, Meta } from '@iocore/component';
 import { HTTPMethod } from "find-my-way";
 import { Next } from 'koa';
 import { IMiddleware } from './middleware';
@@ -8,7 +8,6 @@ export const HttpMethodNameSpace = Symbol('#Controller.Method');
 export const HttpDeprecatedNameSpace = Symbol('#Controller.Deprecated');
 export const HttpMiddlewareNameSpace = Symbol('#Controller.Middleware');
 
-@Component.Injectable()
 export abstract class Controller<T = any> extends Router {
   public abstract response(next: Next): T | Promise<T>;
   static readonly Deprecated = Meta.createClassDecorator(HttpDeprecatedNameSpace, () => true);
