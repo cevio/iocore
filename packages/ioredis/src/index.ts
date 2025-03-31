@@ -10,7 +10,7 @@ export class IORedis extends Application {
 
   constructor() {
     super();
-    if (!process.env.IOREDIS_CONFIGS) {
+    if (!process.env.IOCORE_IOREDIS_CONFIGS) {
       throw new Error('`@iocore/ioredis` miss configs: IOCORE_IOREDIS_CONFIGS');
     }
     this.props = JSON.parse(process.env.IOCORE_IOREDIS_CONFIGS);
