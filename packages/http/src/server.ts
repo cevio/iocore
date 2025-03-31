@@ -20,28 +20,31 @@ export class Http extends Application {
   public koa: Koa;
   public app: Instance;
   public server: Server;
-  public keys: string[];
-  public port: number;
-  public props: IOCORE_HTTP_CONFIGS;
+  public readonly props: IOCORE_HTTP_CONFIGS;
 
   @Application.Inject(HttpMiddlewareHooks)
   public readonly hooks: HttpMiddlewareHooks;
 
-  protected async initialize() {
+  constructor() {
+    super();
     if (!process.env.IOCORE_HTTP_CONFIGS) {
       throw new Error('`@iocore/http` miss configs: IOCORE_HTTP_CONFIGS');
     }
-    const props: IOCORE_HTTP_CONFIGS = this.props = JSON.parse(process.env.IOCORE_HTTP_CONFIGS);
+    this.props = JSON.parse(process.env.IOCORE_HTTP_CONFIGS);
+    if (!this.props.keys) {
+      this.props.keys = [randomBytes(32).toString(), randomBytes(64).toString()];
+    }
+  }
+
+  protected async initialize() {
     const koa = new Koa();
-    const keys = koa.keys = Array.isArray(props.keys)
-      ? props.keys
-      : [randomBytes(32).toString(), randomBytes(64).toString()];
+    koa.keys = this.props.keys;
     const app = FindMyWay({
-      ignoreDuplicateSlashes: props.ignoreDuplicateSlashes ?? true,
-      ignoreTrailingSlash: props.ignoreTrailingSlash ?? true,
-      maxParamLength: props.maxParamLength ?? +Infinity,
-      allowUnsafeRegex: props.allowUnsafeRegex ?? true,
-      caseSensitive: props.caseSensitive ?? true,
+      ignoreDuplicateSlashes: this.props.ignoreDuplicateSlashes ?? true,
+      ignoreTrailingSlash: this.props.ignoreTrailingSlash ?? true,
+      maxParamLength: this.props.maxParamLength ?? +Infinity,
+      allowUnsafeRegex: this.props.allowUnsafeRegex ?? true,
+      caseSensitive: this.props.caseSensitive ?? true,
       // @ts-ignore
       defaultRoute: async (_, next: Next) => await next(),
     })
@@ -50,7 +53,7 @@ export class Http extends Application {
     koa.use(this.hooks.compose('suffix'));
     const server = createServer(koa.callback());
     await new Promise<void>((resolve, reject) => {
-      server.listen(props.port, (err?: any) => {
+      server.listen(this.props.port, (err?: any) => {
         if (err) return reject(err);
         resolve();
       })
@@ -58,8 +61,6 @@ export class Http extends Application {
     this.koa = koa;
     this.app = app;
     this.server = server;
-    this.keys = keys;
-    this.port = props.port;
   }
 
   protected terminate() {
@@ -68,8 +69,6 @@ export class Http extends Application {
       this.koa = undefined;
       this.app = undefined;
       this.server = undefined;
-      this.keys = undefined;
-      this.port = undefined;
     }
   }
 
