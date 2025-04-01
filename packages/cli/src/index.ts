@@ -4,6 +4,7 @@ import Boot from '@iocore/boot';
 import { program } from 'commander';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
+import { createProject } from './create';
 
 program.version(pkg.name, '-v, --version', '当前版本号');
 
@@ -24,5 +25,10 @@ program
     if (!entry.default) throw new Error('入口文件缺少default');
     Boot.Strap(existsSync(yamlPath) ? yamlPath : {}, entry.default);
   })
+
+program
+  .command('create')
+  .description('创建新项目')
+  .action(createProject)
 
 program.parseAsync();

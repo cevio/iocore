@@ -1,0 +1,25 @@
+{
+  "name": "wechat-platform-server",
+  "version": "1.0.0",
+  "description": "wechat platform server",
+  "private": true,
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "pub": "npm run build && git add . && git commit -am 'update' && git push",
+    "init": "pnpm i --registry=https://registry.npmmirror.com/",
+    "update": "pnpm update --registry=https://registry.npmmirror.com/",
+    "dev": "iocore start -d",
+    "build": "rm -rf ./dist && tsc -d && fix-esm-import-path --preserve-import-type ./dist",
+    "start": "pm2 start dist/main.js --name=wechat-platform-server"
+  },
+  "devDependencies": {
+    "@iocore/cli": "^1.0.1",
+    "fix-esm-import-path": "^1.10.1",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@iocore/boot": "^1.0.5",
+    "@iocore/component": "^1.0.7"
+  }
+}

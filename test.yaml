@@ -1,5 +1,0 @@
-IOCORE_HTTP_CONFIGS:
-  port: 3000
-  keys:
-    - asdfa
-    - dsfas
