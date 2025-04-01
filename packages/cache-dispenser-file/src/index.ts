@@ -89,7 +89,7 @@ export class FileCacheDispenser<R = any> extends CacheDispenser {
   }
 
   public async get(key: string) {
-    return this.stacks.get(key);
+    return this.stacks.get(key).data;
   }
 
   public async ttl(key: string) {
