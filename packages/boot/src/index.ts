@@ -1,5 +1,5 @@
 import exitHook from 'async-exit-hook';
-import { Application, INewAble, Wrap } from '@iocore/component';
+import Component, { Application, INewAble, Wrap } from '@iocore/component';
 import { resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { parse } from 'yaml';
@@ -41,25 +41,27 @@ export abstract class Boot extends Application {
     })
   }
 
-  public async preload(
+  public async preload<T extends Component = Component>(
     directory: string, suffix: string,
     callback?: (options: {
       file: string,
       path: string,
-      wrap: Wrap,
-      clazz: INewAble,
+      url: string,
+      wrap: Wrap<T>,
+      clazz: INewAble<T>,
     }) => unknown | Promise<unknown>,
   ) {
     const files = await glob(`**/*.${suffix}.{ts,js}`, { cwd: directory });
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const path = resolve(directory, file);
-      const target: { default: INewAble } = await await import(resolve(directory, file));
+      const url = file.substring(0, file.length - suffix.length - 4);
+      const target: { default: INewAble<T> } = await await import(resolve(directory, file));
       if (target.default) {
         const wrap = await Application.preload(target.default);
         if (typeof callback === 'function') {
           await Promise.resolve(callback({
-            file, wrap, path,
+            file, wrap, path, url,
             clazz: target.default,
           }));
         }
