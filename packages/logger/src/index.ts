@@ -69,10 +69,14 @@ export class Logger extends Application {
     return this.instance.log(level, ...args);
   }
 
-  public setLevel(level: Level) {
+  public setLevel(level: Level | string) {
     this.instance.level = level;
     return this;
   }
+}
+
+export {
+  Level,
 }
 
 export default Logger;
