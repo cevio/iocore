@@ -29,11 +29,14 @@ export class IoRedisCacheDispenser<R = any> extends CacheDispenser<R> {
     return JSON.parse(text) as R;
   }
 
-  public ttl(key: string) {
-    return this.redis.conn.ttl(key)
+  public async ttl(key: string) {
+    const expire = await this.redis.conn.ttl(key);
+    return expire === -1 ? 0 : expire;
   }
 
   public delete(key: string) {
     return this.redis.conn.del(key);
   }
 }
+
+export default IoRedisCacheDispenser;

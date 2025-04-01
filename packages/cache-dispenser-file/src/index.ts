@@ -54,9 +54,9 @@ export class FileCacheDispenser<R = any> extends CacheDispenser {
             }
           }
         }
-      } catch (e) {
-        this.checking = false;
-      }
+      } catch (e) { }
+
+      this.checking = false;
     }, 1000);
   }
   protected terminate() {
@@ -108,3 +108,5 @@ export class FileCacheDispenser<R = any> extends CacheDispenser {
     }
   }
 }
+
+export default FileCacheDispenser;
