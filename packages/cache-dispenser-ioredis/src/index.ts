@@ -2,7 +2,7 @@ import { CacheDispenser } from '@iocore/cache';
 import { Application } from '@iocore/component';
 import { IORedis } from '@iocore/ioredis';
 
-@Application.Injectable()
+@Application.Server
 export class IoRedisCacheDispenser<R = any> extends CacheDispenser<R> {
   @Application.Inject(IORedis)
   private readonly redis: IORedis;
