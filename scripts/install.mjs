@@ -100,6 +100,6 @@ for (let i = 0 ; i < directories.length; i++) {
   })
 
   if (error) return logger.error('-', error.message);
-  logger.info('+', target);
+  logger.info('+', target + ':', ...answers);
 })();
 
