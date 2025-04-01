@@ -12,11 +12,10 @@ program
   .option('-e, --entry <file>', '入口文件', 'src/main.ts')
   .option('-d, --dev', '开发模式', false)
   .description('启动服务')
-  .action(async (yaml: string = 'incore.configs.yaml', options: { entry: string, dev: boolean }) => {
+  .action(async (yaml: string = 'iocore.configs.yaml', options: { entry: string, dev: boolean }) => {
     if (options.dev) {
       // @ts-ignore
-      const { register } = await import('tsx');
-      register();
+      await import('tsx/esm');
     }
     const yamlPath = resolve(process.cwd(), yaml);
     const file = resolve(process.cwd(), options.entry);
