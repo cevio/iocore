@@ -68,6 +68,28 @@ importers:
         specifier: ^1.10.1
         version: 1.10.1
 
+  packages/cache-dispenser-file:
+    dependencies:
+      '@iocore/cache':
+        specifier: workspace:^
+        version: link:../cache
+      '@iocore/component':
+        specifier: workspace:^
+        version: link:../component
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
+      fs-extra:
+        specifier: ^11.2.0
+        version: 11.3.0
+      glob:
+        specifier: ^11.0.1
+        version: 11.0.1
+    devDependencies:
+      fix-esm-import-path:
+        specifier: ^1.10.1
+        version: 1.10.1
+
   packages/cache-dispenser-ioredis:
     dependencies:
       '@iocore/cache':
