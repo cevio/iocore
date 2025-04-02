@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { createProject } from './create';
 
-program.version(pkg.name, '-v, --version', '当前版本号');
+program.version(pkg.version, '-v, --version', '当前版本号');
 
 program
   .command('start [yaml]')
