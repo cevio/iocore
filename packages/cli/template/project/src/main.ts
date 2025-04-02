@@ -6,5 +6,5 @@ export default class extends Boot {
   }
 
   protected async initialize() { }
-  protected terminate() { }
+  protected async terminate() { }
 }
