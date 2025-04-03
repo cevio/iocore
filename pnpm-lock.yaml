@@ -233,14 +233,24 @@ importers:
         specifier: ^1.10.1
         version: 1.10.1
 
+  packages/micro-ws-agent:
+    dependencies:
+      '@iocore/component':
+        specifier: workspace:^
+        version: link:../component
+      '@iocore/micro-ws':
+        specifier: workspace:^
+        version: link:../micro-ws
+    devDependencies:
+      fix-esm-import-path:
+        specifier: ^1.10.1
+        version: 1.10.1
+
   packages/micro-ws-registry:
     dependencies:
       '@iocore/boot':
         specifier: workspace:^
         version: link:../boot
-      '@iocore/component':
-        specifier: workspace:^
-        version: link:../component
       '@iocore/micro-ws':
         specifier: workspace:^
         version: link:../micro-ws

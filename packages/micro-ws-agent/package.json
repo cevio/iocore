@@ -1,6 +1,6 @@
 {
-  "name": "@iocore/micro-ws-registry",
-  "version": "1.0.1",
+  "name": "@iocore/micro-ws-agent",
+  "version": "1.0.0",
   "description": "Default Monorepo template",
   "main": "dist/index.js",
   "type": "module",
@@ -18,7 +18,7 @@
     "fix-esm-import-path": "^1.10.1"
   },
   "dependencies": {
-    "@iocore/boot": "workspace:^",
+    "@iocore/component": "workspace:^",
     "@iocore/micro-ws": "workspace:^"
   }
 }
