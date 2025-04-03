@@ -10,19 +10,34 @@ program.version(pkg.version, '-v, --version', '当前版本号');
 
 program
   .command('start [yaml]')
-  .option('-e, --entry <file>', '入口文件', 'src/main.ts')
+  .option('-e, --entry <file>', '入口文件')
+  .option('-m, --module <module>', '启动模块')
   .option('-d, --dev', '开发模式', false)
   .description('启动服务')
-  .action(async (yaml: string = 'iocore.configs.yaml', options: { entry: string, dev: boolean }) => {
+  .action(async (yaml: string = 'iocore.configs.yaml', options: {
+    entry?: string,
+    dev?: boolean,
+    module?: string
+  }) => {
     if (options.dev) {
       // @ts-ignore
       await import('tsx/esm');
     }
     const yamlPath = resolve(process.cwd(), yaml);
-    const file = resolve(process.cwd(), options.entry);
-    if (!existsSync(file)) throw new Error('找不到入口文件');
+
+    let file: string;
+    if (options.entry) {
+      file = resolve(process.cwd(), options.entry);
+      if (!existsSync(file)) throw new Error('找不到入口文件');
+    } else if (options.module) {
+      file = options.module;
+    } else {
+      throw new Error('未知的入口');
+    }
+
     const entry = await import(file);
     if (!entry.default) throw new Error('入口文件缺少default');
+
     Boot.Strap(existsSync(yamlPath) ? yamlPath : {}, entry.default);
   })
 
