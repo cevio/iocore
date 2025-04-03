@@ -6,15 +6,17 @@ enum CONNECT_STATUS {
   DEFINED,
   CONNECTING,
 }
-
+export { Channel } from './channel';
 export {
   ServerOptions,
 }
 
+type IFunction<T = any, P extends any[] = any> = (channel: Channel, ...args: P) => T
+
 export class MicroWebSocket extends EventEmitter {
   public readonly server: WebSocketServer;
-  public readonly functions = new Map<string, Function>();
-  private readonly channels = new Map<string, Channel>();
+  public readonly functions = new Map<string, IFunction>();
+  public readonly channels = new Map<string, Channel>();
   private readonly connectings = new Map<string, {
     status: CONNECT_STATUS,
     pools: Set<{
@@ -99,6 +101,18 @@ export class MicroWebSocket extends EventEmitter {
           target.pools.add({ resolve, reject });
         })
     }
+  }
+
+  public bind<T = any, P extends any[] = []>(key: string, callback: IFunction<T, P>) {
+    if (this.functions.has(key)) {
+      throw new Error('方法[' + key + ']已存在');
+    }
+    this.functions.set(key, callback);
+    return this;
+  }
+
+  public close() {
+    this.server.close();
   }
 }
 

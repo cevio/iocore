@@ -10,8 +10,8 @@ interface ChannelPostData {
 export class Channel extends Demodulator {
   constructor(
     public readonly host: string,
-    private readonly socket: WebSocket,
-    private readonly server: MicroWebSocket,
+    public readonly socket: WebSocket,
+    public readonly server: MicroWebSocket,
   ) {
     super();
     socket.on('message', msg => {
@@ -42,7 +42,7 @@ export class Channel extends Demodulator {
   protected exec(data: ChannelPostData) {
     if (this.server.functions.has(data.cmd)) {
       const fn = this.server.functions.get(data.cmd);
-      return fn(...data.props);
+      return fn(this, ...data.props);
     }
   }
 
