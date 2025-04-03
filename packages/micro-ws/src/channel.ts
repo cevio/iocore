@@ -45,4 +45,9 @@ export class Channel extends Demodulator {
       return fn(...data.props);
     }
   }
+
+  public disconnect() {
+    if (this.socket.CLOSING || this.socket.CLOSED) return;
+    this.socket.close();
+  }
 }

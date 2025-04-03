@@ -1,5 +1,6 @@
 import { WebSocketServer, ServerOptions, WebSocket } from 'ws';
 import { Channel } from './channel';
+import { EventEmitter } from 'node:events';
 
 enum CONNECT_STATUS {
   DEFINED,
@@ -10,7 +11,7 @@ export {
   ServerOptions,
 }
 
-export class MicroWebSocket {
+export class MicroWebSocket extends EventEmitter {
   public readonly server: WebSocketServer;
   public readonly functions = new Map<string, Function>();
   private readonly channels = new Map<string, Channel>();
@@ -23,6 +24,7 @@ export class MicroWebSocket {
   }>();
 
   constructor(options: ServerOptions) {
+    super();
     this.server = new WebSocketServer(options);
     this.server.on('connection', (socket, request) => {
       const ip = request.socket.remoteAddress;
@@ -39,6 +41,7 @@ export class MicroWebSocket {
     this.channels.set(host, channel);
     socket.on('close', () => {
       this.channels.delete(host);
+      this.emit('disconnect', channel);
     })
     return channel;
   }
