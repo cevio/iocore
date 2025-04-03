@@ -29,7 +29,7 @@ export abstract class Demodulator {
   }>();
 
   protected abstract post<T = any>(data: IDemodulatorMessage<T>): void;
-  protected abstract exec<T = any, U = any>(data: T): U | Promise<U>;
+  protected abstract exec(data: any): any;
 
   // 创建安全的自增 ID
   private createId() {
@@ -51,7 +51,7 @@ export abstract class Demodulator {
     return state;
   }
 
-  public send<T = any>(data: T, timeout = 30000) {
+  protected send<T = any>(data: T, timeout = 30000) {
     const controller = new AbortController();
     const state = this.createPostData(DEMODULATOR_MODE.REQUEST, data);
     this.post(state);

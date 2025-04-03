@@ -33,9 +33,10 @@ prompt([
     choices: packages,
   }
 ]).then(({target}) => {
-  const ls = spawn('pnpm', ['run', command, '--filter=' + target], {
+  const ls = spawn('pnpm', ['--filter', target, 'run', command], {
     cwd: process.cwd(),
     env: process.env,
+    stdio: 'inherit',
   })
   ls.on('error', err => logger.error('spawn', err.message));
 });
