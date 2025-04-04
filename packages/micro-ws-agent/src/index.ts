@@ -48,7 +48,11 @@ export class MicroWebSocketAgent extends Application {
     const port = await detect(this.props.port);
     this.server = new MicroWebSocket({ port });
     this.props.port = port;
+    this.server.on('connect', (channel: Channel) => {
+      this.logger.info('+', channel.host);
+    })
     this.server.on('disconnect', (channel: Channel) => {
+      this.logger.info('-', channel.host);
       if (channel.host === this.props.registry) {
         this.connectRegistry()
           .catch(e => this.logger.error(e));

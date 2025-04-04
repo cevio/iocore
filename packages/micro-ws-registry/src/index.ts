@@ -9,7 +9,11 @@ export default class extends Boot {
     super();
     this.port = Number(process.env.IOCORE_MICRO_WEBSOCKET_REGISTRY_PORT || 8427);
     this.server = new MicroWebSocket({ port: this.port });
+    this.server.on('connect', (channel: Channel) => {
+      this.logger.info('+', channel.host);
+    })
     this.server.on('disconnect', (channel: Channel) => {
+      this.logger.info('-', channel.host);
       for (const [key, value] of this.namespaces.entries()) {
         if (channel.host === value) {
           this.namespaces.delete(key);

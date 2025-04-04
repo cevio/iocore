@@ -49,6 +49,7 @@ export class MicroWebSocket extends EventEmitter {
       this.channels.delete(host);
       this.emit('disconnect', channel);
     })
+    this.emit('connect', channel);
     return channel;
   }
 
