@@ -1,6 +1,6 @@
 {
   "name": "@iocore/cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Default Monorepo template",
   "main": "dist/index.js",
   "type": "module",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@iocore/boot": "workspace:^",
+    "@iocore/micro-ws-registry": "workspace:^",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "commander": "^13.1.0",

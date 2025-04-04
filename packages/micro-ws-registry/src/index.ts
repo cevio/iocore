@@ -4,9 +4,11 @@ import { Channel, MicroWebSocket } from '@iocore/micro-ws';
 export default class extends Boot {
   private readonly server: MicroWebSocket;
   private readonly namespaces = new Map<string, string>();
-  constructor(port: number = 8427) {
+  private readonly port: number;
+  constructor() {
     super();
-    this.server = new MicroWebSocket({ port });
+    this.port = Number(process.env.IOCORE_MICRO_WEBSOCKET_REGISTRY_PORT || 8427);
+    this.server = new MicroWebSocket({ port: this.port });
     this.server.on('disconnect', (channel: Channel) => {
       for (const [key, value] of this.namespaces.entries()) {
         if (channel.host === value) {
@@ -34,6 +36,7 @@ export default class extends Boot {
   protected initialize() {
     this.online();
     this.where();
+    this.logger.info('[Micro WS Registry] start on port:' + this.port);
   }
 
   protected terminate() {

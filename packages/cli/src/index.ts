@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import pkg from '../package.json' with { type: 'json' };
 import Boot from '@iocore/boot';
+import MicroWsRegistry from '@iocore/micro-ws-registry';
 import { program } from 'commander';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
@@ -45,5 +46,20 @@ program
   .command('create')
   .description('创建新项目')
   .action(createProject)
+
+program
+  .command('registry <protocol>')
+  .description('启动微服务的注册中心')
+  .requiredOption('-p, --port <port>', '启动端口')
+  .action(async (protocol: 'ws', options: { port: string }) => {
+    switch (protocol) {
+      case 'ws':
+        Boot.Strap({
+          IOCORE_MICRO_WEBSOCKET_REGISTRY_PORT: options.port
+        }, MicroWsRegistry);
+        break;
+      default: throw new Error('非法协议');
+    }
+  })
 
 program.parseAsync();

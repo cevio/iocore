@@ -124,6 +124,9 @@ importers:
       '@iocore/boot':
         specifier: workspace:^
         version: link:../boot
+      '@iocore/micro-ws-registry':
+        specifier: workspace:^
+        version: link:../micro-ws-registry
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
