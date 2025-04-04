@@ -31,11 +31,25 @@ export class MicroWebSocket extends EventEmitter {
     super();
     this.server = new WebSocketServer(options);
     this.server.on('connection', (socket, request) => {
-      const ipv6 = request.socket.remoteAddress;
-      const sp = ipv6.split(':');
-      const ipv4 = sp[sp.length - 1];
-      const port = request.socket.remotePort;
-      const key = ipv4 + ':' + port;
+      const forwardedFor = request.headers['x-forwarded-for'];
+      let ip = Array.isArray(forwardedFor)
+        ? forwardedFor[0]
+        : (forwardedFor || '').split(',')[0].trim();
+      if (!ip) {
+        ip = request.headers['x-real-ip'] as string || '';
+      }
+      if (!ip) {
+        const socketIp = request.socket.remoteAddress || 'unknown';
+        const sp = socketIp.split(':');
+        ip = sp[sp.length - 1];
+      }
+
+      const clientPortHeader = request.headers['x-client-port'];
+      const clientPort = clientPortHeader
+        ? parseInt(clientPortHeader as string, 10)
+        : request.socket.remotePort; // 回退到代理连接的端口
+
+      const key = ip + ':' + clientPort;
       if (!this.channels.has(key)) {
         this.createChannel(key, socket);
       }
