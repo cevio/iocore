@@ -1,6 +1,6 @@
 {
   "name": "@iocore/micro-ws-agent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Default Monorepo template",
   "main": "dist/index.js",
   "type": "module",
@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@iocore/component": "workspace:^",
-    "@iocore/micro-ws": "workspace:^"
+    "@iocore/logger": "workspace:^",
+    "@iocore/micro-ws": "workspace:^",
+    "detect-port": "^2.1.0"
   }
 }

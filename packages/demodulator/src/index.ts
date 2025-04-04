@@ -13,6 +13,10 @@ export interface IDemodulatorMessage<T = any> {
   data?: T
 }
 
+export {
+  Exception,
+}
+
 export interface IDemodulatorMessageResponse<T = any> {
   status: string | number,
   data: T,

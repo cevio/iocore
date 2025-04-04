@@ -1,6 +1,7 @@
 import { WebSocketServer, ServerOptions, WebSocket } from 'ws';
 import { Channel } from './channel';
 import { EventEmitter } from 'node:events';
+import { Exception } from '@iocore/demodulator';
 
 enum CONNECT_STATUS {
   DEFINED,
@@ -9,6 +10,7 @@ enum CONNECT_STATUS {
 export { Channel } from './channel';
 export {
   ServerOptions,
+  Exception,
 }
 
 type IFunction<T = any, P extends any[] = any> = (channel: Channel, ...args: P) => T
