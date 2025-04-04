@@ -22,6 +22,7 @@ export default class extends Boot {
   private online() {
     this.server.bind('online', (channel, namespace: string) => {
       this.namespaces.set(namespace, channel.host);
+      this.logger.info('+', namespace, channel.host);
     })
   }
 

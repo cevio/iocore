@@ -31,9 +31,11 @@ export class MicroWebSocket extends EventEmitter {
     super();
     this.server = new WebSocketServer(options);
     this.server.on('connection', (socket, request) => {
-      const ip = request.socket.remoteAddress;
+      const ipv6 = request.socket.remoteAddress;
+      const sp = ipv6.split(':');
+      const ipv4 = sp[sp.length - 1];
       const port = request.socket.remotePort;
-      const key = ip + ':' + port;
+      const key = ipv4 + ':' + port;
       if (!this.channels.has(key)) {
         this.createChannel(key, socket);
       }
