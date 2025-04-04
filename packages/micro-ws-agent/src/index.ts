@@ -45,8 +45,9 @@ export class MicroWebSocketAgent extends Application {
   }
 
   protected async initialize() {
-    const port = this.props.port || await detect();
+    const port = await detect(this.props.port);
     this.server = new MicroWebSocket({ port });
+    this.props.port = port;
     this.server.on('disconnect', (channel: Channel) => {
       if (channel.host === this.props.registry) {
         this.connectRegistry()
@@ -61,6 +62,7 @@ export class MicroWebSocketAgent extends Application {
       }
     })
     await this.connectRegistry();
+    this.logger.info(`[${this.props.namespace}] start on port: ${this.props.port}`);
   }
 
   public async where(namespace: string) {
