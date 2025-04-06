@@ -2,6 +2,7 @@ import { WebSocketServer, ServerOptions, WebSocket } from 'ws';
 import { Channel } from './channel';
 import { EventEmitter } from 'node:events';
 import { Exception } from '@iocore/demodulator';
+import { networkInterfaces } from 'os';
 
 enum CONNECT_STATUS {
   DEFINED,
@@ -19,6 +20,8 @@ export class MicroWebSocket extends EventEmitter {
   public readonly server: WebSocketServer;
   public readonly functions = new Map<string, IFunction>();
   public readonly channels = new Map<string, Channel>();
+  private readonly host = getInternalIp();
+  private readonly port: number;
   private readonly connectings = new Map<string, {
     status: CONNECT_STATUS,
     pools: Set<{
@@ -30,26 +33,14 @@ export class MicroWebSocket extends EventEmitter {
   constructor(options: ServerOptions) {
     super();
     this.server = new WebSocketServer(options);
+    this.port = options.port;
     this.server.on('connection', (socket, request) => {
-      const forwardedFor = request.headers['x-forwarded-for'];
-      let ip = Array.isArray(forwardedFor)
-        ? forwardedFor[0]
-        : (forwardedFor || '').split(',')[0].trim();
-      if (!ip) {
-        ip = request.headers['x-real-ip'] as string || '';
-      }
-      if (!ip) {
-        const socketIp = request.socket.remoteAddress || 'unknown';
-        const sp = socketIp.split(':');
-        ip = sp[sp.length - 1];
-      }
-
-      const clientPortHeader = request.headers['x-client-port'];
-      const clientPort = clientPortHeader
-        ? parseInt(clientPortHeader as string, 10)
-        : request.socket.remotePort; // 回退到代理连接的端口
-
-      const key = ip + ':' + clientPort;
+      const url = request.url;
+      const sp = url.split('/');
+      const host = sp[1];
+      const port = sp[2];
+      if (!host || !port) return;
+      const key = host + ':' + port;
       if (!this.channels.has(key)) {
         this.createChannel(key, socket);
       }
@@ -69,7 +60,7 @@ export class MicroWebSocket extends EventEmitter {
 
   private connect(host: string) {
     return new Promise<Channel>((resolve, reject) => {
-      const ws = new WebSocket('ws://' + host);
+      const ws = new WebSocket('ws://' + host + '/' + this.host + '/' + this.port);
       const errorHander = (e: any) => {
         ws.off('error', errorHander);
         ws.off('open', openHandler);
@@ -136,3 +127,15 @@ export class MicroWebSocket extends EventEmitter {
 }
 
 export default MicroWebSocket;
+
+function getInternalIp() {
+  const interfaces = networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
