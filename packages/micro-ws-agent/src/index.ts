@@ -3,6 +3,7 @@ import Logger from "@iocore/logger";
 import { Channel, MicroWebSocket, Exception } from "@iocore/micro-ws";
 import { Service } from "./service";
 import { detect } from 'detect-port';
+import { operation } from 'retry';
 
 export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
   registry: string,
@@ -54,8 +55,7 @@ export class MicroWebSocketAgent extends Application {
     this.server.on('disconnect', (channel: Channel) => {
       this.logger.info('-', channel.host);
       if (channel.host === this.props.registry) {
-        this.connectRegistry()
-          .catch(e => this.logger.error(e));
+        this.reconnectRegistry();
       } else {
         for (const [key, _channel] of this.connections.entries()) {
           if (_channel === channel) {
@@ -67,6 +67,19 @@ export class MicroWebSocketAgent extends Application {
     })
     await this.connectRegistry();
     this.logger.info(`[${this.props.namespace}] start on port: ${this.props.port}`);
+  }
+
+  private reconnectRegistry() {
+    const oper = operation();
+    oper.attempt(i => {
+      this.logger.debug('-', 'reconnect to registry:', i);
+      this.connectRegistry().catch(e => {
+        if (oper.retry(e)) {
+          return;
+        }
+        this.logger.error(oper.mainError());
+      })
+    });
   }
 
   public async where(namespace: string) {

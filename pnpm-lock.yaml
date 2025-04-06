@@ -247,9 +247,15 @@ importers:
       '@iocore/micro-ws':
         specifier: workspace:^
         version: link:../micro-ws
+      '@types/retry':
+        specifier: ^0.12.5
+        version: 0.12.5
       detect-port:
         specifier: ^2.1.0
         version: 2.1.0
+      retry:
+        specifier: ^0.13.1
+        version: 0.13.1
     devDependencies:
       fix-esm-import-path:
         specifier: ^1.10.1
@@ -739,6 +745,9 @@ packages:
 
   '@types/range-parser@1.2.7':
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
+
+  '@types/retry@0.12.5':
+    resolution: {integrity: sha512-3xSjTp3v03X/lSQLkczaN9UIEwJMoMCA1+Nb5HfbJEQWogdeQIyVtTvxPXDQjZ5zws8rFQfVfRdz03ARihPJgw==}
 
   '@types/send@0.17.4':
     resolution: {integrity: sha512-x2EM6TJOybec7c52BX0ZspPodMsQUd5L6PRwOunVyVUhXiBSKf3AezDL8Dgvgt5o0UfKNfuA0eMLr2wLT4AiBA==}
@@ -1469,6 +1478,10 @@ packages:
   ret@0.5.0:
     resolution: {integrity: sha512-I1XxrZSQ+oErkRR4jYbAyEEu2I0avBvvMM5JN+6EBprOGRCs63ENqZ3vjavq8fBw2+62G5LF5XelKwuJpcvcxw==}
     engines: {node: '>=10'}
+
+  retry@0.13.1:
+    resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
+    engines: {node: '>= 4'}
 
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
@@ -2270,6 +2283,8 @@ snapshots:
 
   '@types/range-parser@1.2.7': {}
 
+  '@types/retry@0.12.5': {}
+
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
@@ -2984,6 +2999,8 @@ snapshots:
   resolve-pkg-maps@1.0.0: {}
 
   ret@0.5.0: {}
+
+  retry@0.13.1: {}
 
   reusify@1.1.0: {}
 

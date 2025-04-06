@@ -4,12 +4,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { copy } from 'fs-extra';
 import { HttpResolve } from './http';
+import { MicroWSResolve } from './ws';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const __template = resolve(__dirname, '../../template/project');
 const __controller = resolve(__dirname, '../../template/controllers');
 const __middleware = resolve(__dirname, '../../template/middlewares');
+const __service = resolve(__dirname, '../../template/services');
 
 const http_yaml = `\n\nIOCORE_HTTP_CONFIGS:
   port: 3000
@@ -32,6 +34,10 @@ const typeorm_yaml = `\n\nIOCORE_TYPEORM_CONFIGS:
   charset: utf8mb4
   entityPrefix: iocore_orm_
   entities: src/entities/*.dto.{js,ts}`
+const micro_ws_yaml = `IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS:
+  registry: 127.0.0.1:8461
+  namespace: test-agent
+  port: 35681`
 
 export async function createProject() {
   const prompt = createPromptModule();
@@ -60,6 +66,7 @@ export async function createProject() {
     message: '请选择需要的服务',
     choices: [
       { name: 'Http服务', value: 'http' },
+      { name: 'WS微服务', value: 'micro-ws' },
       { name: 'IORedis服务', value: 'ioredis' },
       { name: 'TypeORM服务', value: 'typeorm' },
     ]
@@ -95,6 +102,17 @@ export async function createProject() {
         if (!yaml.includes('IOCORE_TYPEORM_CONFIGS:')) {
           writeFileSync(yamlFile, yaml += typeorm_yaml, 'utf8');
         }
+        break;
+      case 'micro-ws':
+        const services = resolve(directory, 'src', 'services');
+        pkg.default.dependencies['@iocore/micro-ws-agent'] = '^1.0.7';
+        pkg.default.dependencies['@iocore/logger'] = '^1.0.4';
+        writeFileSync(pkgFile, JSON.stringify(pkg.default, null, 2), 'utf8');
+        if (!yaml.includes('IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS:')) {
+          writeFileSync(yamlFile, yaml += micro_ws_yaml, 'utf8');
+        }
+        await copy(__service, services);
+        MicroWSResolve(directory)
         break;
     }
   }
