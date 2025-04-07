@@ -7,15 +7,7 @@ export abstract class Service<T extends any[] = [], R = any> extends Component {
   protected readonly agent: MicroWebSocketAgent;
   public abstract exec(...args: T): R | Promise<R>;
 
-  public async fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
-    const uri = new URL(url);
-    if (uri.protocol !== 'ws:') {
-      throw new Exception(461, 'protocol unaccept');
-    }
-    const namespace = uri.host;
-    const router = uri.pathname;
-    const channel = await this.agent.where(namespace);
-    const { response } = channel.fetch(router, args, timeout);
-    return await response<R>();
+  public fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
+    return this.agent.fetch<R>(url, args, timeout);
   }
 }

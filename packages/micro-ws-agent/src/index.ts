@@ -107,6 +107,18 @@ export class MicroWebSocketAgent extends Application {
     this.server.close();
   }
 
+  public async fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
+    const uri = new URL(url);
+    if (uri.protocol !== 'ws:') {
+      throw new Exception(461, 'protocol unaccept');
+    }
+    const namespace = uri.host;
+    const router = uri.pathname;
+    const channel = await this.where(namespace);
+    const { response } = channel.fetch(router, args, timeout);
+    return await response<R>();
+  }
+
   public bind<P extends any[], R, T extends Service<P, R>>(url: string, clazz: INewAble<T>) {
     url = url.startsWith('/') ? url : '/' + url;
     this.server.bind(url, async (channel, ...args: P) => {
