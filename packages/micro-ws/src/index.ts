@@ -14,7 +14,7 @@ export {
   Exception,
 }
 
-type IFunction<T = any, P extends any[] = any> = (channel: Channel, ...args: P) => T
+type IFunction<T = any> = (channel: Channel, props: any) => T
 
 export class MicroWebSocket extends EventEmitter {
   public readonly server: WebSocketServer;
@@ -113,9 +113,9 @@ export class MicroWebSocket extends EventEmitter {
     }
   }
 
-  public bind<T = any, P extends any[] = []>(key: string, callback: IFunction<T, P>) {
+  public bind<T = any>(key: string, callback: IFunction<T>) {
     if (this.functions.has(key)) {
-      throw new Error('方法[' + key + ']已存在');
+      throw new Error('method [' + key + '] already exits');
     }
     this.functions.set(key, callback);
     return this;

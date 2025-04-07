@@ -1,9 +1,11 @@
-import Component, { Application, INewAble } from "@iocore/component";
+import Component, { Application, INewAble, Meta } from "@iocore/component";
 import Logger from "@iocore/logger";
 import { Channel, MicroWebSocket, Exception } from "@iocore/micro-ws";
-import { Service } from "./service";
+import { MicroWSMiddlewareNameSpace, Service } from "./service";
 import { detect } from 'detect-port';
 import { operation } from 'retry';
+import { Middleware } from "./middleware";
+import { compose, Next } from "./compose";
 
 export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
   registry: string,
@@ -14,6 +16,8 @@ export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
 export {
   Service,
   Exception,
+  Next,
+  Middleware
 }
 
 @Application.Server
@@ -41,7 +45,7 @@ export class MicroWebSocketAgent extends Application {
 
   private async connectRegistry() {
     const registry = await this.server.use(this.props.registry);
-    const fetcher = registry.fetch('online', [this.props.namespace]);
+    const fetcher = registry.fetch('online', this.props.namespace);
     await fetcher.response();
   }
 
@@ -86,7 +90,11 @@ export class MicroWebSocketAgent extends Application {
     if (this.connections.has(namespace)) {
       return this.connections.get(namespace);
     }
-    const { response } = this.registry.fetch('where', [namespace]);
+    const registry = this.registry;
+    if (!registry) {
+      throw new Exception(414, 'Cannot find the registry, may be it disconnect');
+    }
+    const { response } = registry.fetch('where', namespace);
     const host = await response<string>();
     if (!host) {
       throw new Exception(
@@ -107,22 +115,52 @@ export class MicroWebSocketAgent extends Application {
     this.server.close();
   }
 
-  public async fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
-    const uri = new URL(url);
-    if (uri.protocol !== 'ws:') {
-      throw new Exception(461, 'protocol unaccept');
-    }
+  public async fetch<T extends string, R = any>(options: {
+    url: `${T}://${string}`,
+    props: any[],
+    timeout?: number,
+    extra?: {
+      [K in T]: any
+    } & Record<string, any>
+  }) {
+    const uri = new URL(options.url);
     const namespace = uri.host;
     const router = uri.pathname;
     const channel = await this.where(namespace);
-    const { response } = channel.fetch(router, args, timeout);
+    const { response } = channel.fetch(router, {
+      props: options.props,
+      extra: options.extra || {},
+      protocol: uri.protocol,
+    }, options.timeout);
     return await response<R>();
   }
 
   public bind<P extends any[], R, T extends Service<P, R>>(url: string, clazz: INewAble<T>) {
     url = url.startsWith('/') ? url : '/' + url;
-    this.server.bind(url, async (channel, ...args: P) => {
-      const target = await Component.create(clazz);
+    const meta = Meta.get(clazz);
+    const middlewares: INewAble<Middleware>[] = meta.clazz.get(MicroWSMiddlewareNameSpace);
+    this.server.bind(url, async (channel, data: { props: P, extra: any, protocol: string }) => {
+      let value: R;
+      const mixin = this.mixin(channel, data.protocol, data.extra);
+      const _middlewares = middlewares.map(middleware => {
+        return async (next: Next) => {
+          const target = mixin(await Component.create(middleware));
+          await target.use(next);
+        }
+      });
+      _middlewares.push(async next => {
+        const target = mixin(await Component.create(clazz));
+        value = await target.exec(...data.props);
+        await next();
+      });
+      const composed = compose(_middlewares);
+      await composed();
+      return value;
+    })
+  }
+
+  private mixin(channel: Channel, protocol: string, extra: any) {
+    return <T>(target: T) => {
       Object.defineProperties(target, {
         channel: {
           get: () => channel,
@@ -130,9 +168,15 @@ export class MicroWebSocketAgent extends Application {
         agent: {
           get: () => this,
         },
+        protocol: {
+          get: () => protocol,
+        },
+        extra: {
+          get: () => extra,
+        }
       })
-      return await target.exec(...args);
-    })
+      return target;
+    }
   }
 }
 

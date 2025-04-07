@@ -40,11 +40,15 @@ export default class extends Boot {
     })
   }
 
-  public async fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
-    const uri = new URL(url);
-    if (uri.protocol !== 'ws:') {
-      throw new Exception(461, 'protocol unaccept');
-    }
+  public async fetch<T extends string, R = any>(options: {
+    url: `${T}://${string}`,
+    props: any[],
+    timeout?: number,
+    extra?: {
+      [K in T]: any
+    } & Record<string, any>
+  }) {
+    const uri = new URL(options.url);
     const namespace = uri.host;
     const router = uri.pathname;
     if (!this.namespaces.has(namespace)) {
@@ -54,7 +58,11 @@ export default class extends Boot {
       );
     }
     const channel = await this.server.use(this.namespaces.get(namespace));
-    const { response } = channel.fetch(router, args, timeout);
+    const { response } = channel.fetch(router, {
+      props: options.props,
+      extra: options.extra || {},
+      protocol: uri.protocol,
+    }, options.timeout);
     return await response<R>();
   }
 

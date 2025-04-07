@@ -38,13 +38,14 @@ for (let i = 0 ; i < directories.length; i++) {
 
 prompt([
   {
-    type: 'list',
+    type: 'checkbox',
     name: 'target',
     message: '选择目标模块',
     choices: Array.from(packages.keys()),
   }
 ]).then(({target}) => {
-  const relatives = new Set([target]);
+  if (!Array.isArray(target)) return;
+  const relatives = new Set(target);
   
   const doit = () => {
     let next = false;
@@ -64,13 +65,23 @@ prompt([
     next = doit();
   }
 
-  for (const [key,{pkg, file}] of packages.entries()) {
-    if (relatives.has(key)) {
-      const version = pkg.version;
-      const sp = version.split('.');
-      pkg.version = `${sp[0]}.${sp[1]}.${Number(sp[2]) + 1}`;
-      writeFileSync(file, JSON.stringify(pkg, null, 2), 'utf8');
-      logger.info('-', key + '@' + pkg.version);
+  return prompt([
+    {
+      type: 'confirm',
+      name: 'ok',
+      message: '是否修改版本号'
     }
-  }
+  ]).then(({ok}) => {
+    if (ok){
+      for (const [key,{pkg, file}] of packages.entries()) {
+        if (relatives.has(key)) {
+          const version = pkg.version;
+          const sp = version.split('.');
+          pkg.version = `${sp[0]}.${sp[1]}.${Number(sp[2]) + 1}`;
+          writeFileSync(file, JSON.stringify(pkg, null, 2), 'utf8');
+          logger.info('-', key + '@' + pkg.version);
+        }
+      }
+    }
+  })
 })

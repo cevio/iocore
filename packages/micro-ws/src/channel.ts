@@ -4,7 +4,7 @@ import { MicroWebSocket } from "./index";
 
 interface ChannelPostData {
   cmd: string,
-  props: any[],
+  props: any,
 }
 
 export class Channel extends Demodulator {
@@ -31,7 +31,7 @@ export class Channel extends Demodulator {
     })
   }
 
-  public fetch(cmd: string, props: any[] = [], timeout?: number) {
+  public fetch(cmd: string, props: any, timeout?: number) {
     return this.send<ChannelPostData>({ cmd, props }, timeout);
   }
 
@@ -42,7 +42,7 @@ export class Channel extends Demodulator {
   protected exec(data: ChannelPostData) {
     if (this.server.functions.has(data.cmd)) {
       const fn = this.server.functions.get(data.cmd);
-      return fn(this, ...data.props);
+      return fn(this, data.props);
     }
   }
 
