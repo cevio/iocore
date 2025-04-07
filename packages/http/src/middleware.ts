@@ -1,5 +1,5 @@
 import Component, { INewAble, Meta, Wrap } from "@iocore/component";
-import { Middleware as KoaMiddleware, Next } from 'koa';
+import { Context, Middleware as KoaMiddleware, Next } from 'koa';
 import { Router } from "./router";
 import { HttpMiddlewareNameSpace } from "./controller";
 
@@ -7,7 +7,7 @@ export type IMiddleware = KoaMiddleware | INewAble<Middleware>;
 
 export abstract class Middleware extends Router {
   static readonly isMiddleware = true;
-  public abstract use(next: Next): Promise<unknown>;
+  public abstract use(ctx: Context, next: Next): Promise<unknown>;
 
   static Dependencies(...args: IMiddleware[]) {
     return Meta.createClassDecorator<IMiddleware[]>(HttpMiddlewareNameSpace, ({ value }) => {
@@ -55,7 +55,7 @@ function transformMiddlewares(middlewares: IMiddleware[]): KoaMiddleware[] {
         const transformer = Router.getInComing(wrap);
         const cmp = await wrap.create();
         await transformer(ctx, cmp);
-        await cmp.value.use(next);
+        await cmp.value.use(ctx, next);
       }
       return _middleware;
     } else {
