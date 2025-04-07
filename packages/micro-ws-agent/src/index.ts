@@ -45,7 +45,7 @@ export class MicroWebSocketAgent extends Application {
     await fetcher.response();
   }
 
-  protected async initialize() {
+  public async initialize() {
     const port = await detect(this.props.port);
     this.server = new MicroWebSocket({ port });
     this.props.port = port;
@@ -99,7 +99,7 @@ export class MicroWebSocketAgent extends Application {
     return channel;
   }
 
-  protected terminate() {
+  public terminate() {
     this.server.removeAllListeners('disconnect');
     if (this.registry) {
       this.registry.disconnect();

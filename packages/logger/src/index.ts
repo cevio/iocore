@@ -38,8 +38,8 @@ export class Logger extends Application {
     this.instance = log4js.getLogger();
   }
 
-  protected initialize() { }
-  protected terminate() { }
+  public initialize() { }
+  public terminate() { }
 
   public trace(message: any, ...args: any[]) {
     return this.instance.trace(message, ...args);

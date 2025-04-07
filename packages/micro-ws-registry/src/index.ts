@@ -1,6 +1,8 @@
 import { Boot } from '@iocore/boot';
 import { Channel, Exception, MicroWebSocket } from '@iocore/micro-ws';
+import { Application } from '../../component/dist';
 
+@Application.Server
 export default class extends Boot {
   private readonly server: MicroWebSocket;
   private readonly namespaces = new Map<string, string>();
@@ -56,13 +58,13 @@ export default class extends Boot {
     return await response<R>();
   }
 
-  protected initialize() {
+  public initialize() {
     this.online();
     this.where();
     this.logger.info('[Micro WS Registry] start on port:' + this.port);
   }
 
-  protected terminate() {
+  public terminate() {
     this.server.close();
   }
 }

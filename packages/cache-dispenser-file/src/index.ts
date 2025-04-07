@@ -25,7 +25,7 @@ export class FileCacheDispenser<R = any> extends CacheDispenser {
     this.directory = resolve(process.cwd(), process.env.IOCORE_HTTP_CONFIGS);
   }
 
-  protected async initialize() {
+  public async initialize() {
     if (!existsSync(this.directory)) {
       await ensureDir(this.directory);
     }
@@ -59,7 +59,8 @@ export class FileCacheDispenser<R = any> extends CacheDispenser {
       this.checking = false;
     }, 1000);
   }
-  protected terminate() {
+
+  public terminate() {
     clearInterval(this.timer);
   }
 

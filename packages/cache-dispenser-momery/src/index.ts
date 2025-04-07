@@ -8,7 +8,7 @@ export class MomeryCacheDispenser<R = any> extends CacheDispenser {
   private timer: NodeJS.Timeout;
   private checking = false;
 
-  protected initialize() {
+  public initialize() {
     this.timer = setInterval(() => {
       if (this.checking) return;
       this.checking = true;
@@ -25,7 +25,7 @@ export class MomeryCacheDispenser<R = any> extends CacheDispenser {
     }, 1000);
   }
 
-  protected terminate() {
+  public terminate() {
     clearInterval(this.timer);
   }
 

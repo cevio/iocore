@@ -36,7 +36,7 @@ export class Http extends Application {
     }
   }
 
-  protected async initialize() {
+  public async initialize() {
     const koa = new Koa();
     koa.keys = this.props.keys;
     const app = FindMyWay({
@@ -63,7 +63,7 @@ export class Http extends Application {
     this.server = server;
   }
 
-  protected terminate() {
+  public terminate() {
     if (this.server) {
       this.server.close();
       this.koa = undefined;

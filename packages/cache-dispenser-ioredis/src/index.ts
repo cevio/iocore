@@ -7,8 +7,8 @@ export class IoRedisCacheDispenser<R = any> extends CacheDispenser<R> {
   @Application.Inject(IORedis)
   private readonly redis: IORedis;
 
-  protected initialize() { }
-  protected terminate() { }
+  public initialize() { }
+  public terminate() { }
 
   public async set(key: string, value: R, time: number = 0) {
     const data = JSON.stringify(value);

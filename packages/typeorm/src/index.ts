@@ -14,7 +14,8 @@ export class TypeORM extends Application {
     }
     this.props = JSON.parse(process.env.IOCORE_TYPEORM_CONFIGS);
   }
-  protected async initialize() {
+
+  public async initialize() {
     const connection = new DataSource({
       ...this.props,
       synchronize: true,
@@ -24,7 +25,7 @@ export class TypeORM extends Application {
     this.conn = connection;
   }
 
-  protected async terminate() {
+  public async terminate() {
     if (this.conn) {
       await this.conn.destroy();
       this.conn = undefined;
