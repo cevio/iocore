@@ -46,7 +46,7 @@ async function orderMiddlewares(wrap: Wrap) {
 }
 
 function transformMiddlewares(middlewares: IMiddleware[]): KoaMiddleware[] {
-  return middlewares.map(middleware => {
+  return (middlewares || []).map(middleware => {
     // @ts-ignore
     if (middleware.isMiddleware) {
       const current = middleware as INewAble<Middleware>;

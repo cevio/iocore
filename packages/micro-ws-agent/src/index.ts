@@ -142,7 +142,7 @@ export class MicroWebSocketAgent extends Application {
     this.server.bind(url, async (channel, data: { props: P, extra: any, protocol: string }) => {
       let value: R;
       const mixin = this.mixin(channel, data.protocol, data.extra);
-      const _middlewares = middlewares.map(middleware => {
+      const _middlewares = (middlewares || []).map(middleware => {
         return async (next: Next) => {
           const target = mixin(await Component.create(middleware));
           await target.use(next);
