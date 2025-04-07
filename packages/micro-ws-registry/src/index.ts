@@ -1,6 +1,6 @@
 import { Boot } from '@iocore/boot';
 import { Channel, Exception, MicroWebSocket } from '@iocore/micro-ws';
-import { Application } from '../../component/dist';
+import { Application } from '@iocore/component';
 
 @Application.Server
 export default class extends Boot {

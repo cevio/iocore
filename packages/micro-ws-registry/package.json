@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@iocore/boot": "workspace:^",
+    "@iocore/component": "workspace:^",
     "@iocore/micro-ws": "workspace:^"
   }
 }

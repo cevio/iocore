@@ -266,6 +266,9 @@ importers:
       '@iocore/boot':
         specifier: workspace:^
         version: link:../boot
+      '@iocore/component':
+        specifier: workspace:^
+        version: link:../component
       '@iocore/micro-ws':
         specifier: workspace:^
         version: link:../micro-ws
