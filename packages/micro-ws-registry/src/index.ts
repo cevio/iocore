@@ -1,5 +1,5 @@
 import { Boot } from '@iocore/boot';
-import { Channel, MicroWebSocket } from '@iocore/micro-ws';
+import { Channel, Exception, MicroWebSocket } from '@iocore/micro-ws';
 
 export default class extends Boot {
   private readonly server: MicroWebSocket;
@@ -36,6 +36,24 @@ export default class extends Boot {
         return this.namespaces.get(namespace);
       }
     })
+  }
+
+  public async fetch<R = any>(url: `ws://${string}`, args: any[] = [], timeout?: number) {
+    const uri = new URL(url);
+    if (uri.protocol !== 'ws:') {
+      throw new Exception(461, 'protocol unaccept');
+    }
+    const namespace = uri.host;
+    const router = uri.pathname;
+    if (!this.namespaces.has(namespace)) {
+      throw new Exception(
+        404,
+        'Cannot find the namepsace of ' + namespace + ' from registry'
+      );
+    }
+    const channel = await this.server.use(this.namespaces.get(namespace));
+    const { response } = channel.fetch(router, args, timeout);
+    return await response<R>();
   }
 
   protected initialize() {
