@@ -1,3 +1,11 @@
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      CACHE_PREFIX: string,
+    }
+  }
+}
+
 export type ExtractParams<Template extends string> =
   Template extends `${string}{${infer Key}:${infer Type}}${infer Rest}`
   ? {

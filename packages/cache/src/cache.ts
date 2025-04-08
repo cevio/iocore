@@ -15,7 +15,8 @@ export abstract class CacheImplementer<T extends string = string, R = any> exten
   }
 
   private render(options: ExtractParams<T>) {
-    return this.template.replace(this._regexp, (_, key) => String(options[key as keyof typeof options]));
+    const prefix = process.env.CACHE_PREFIX || '';
+    return prefix + this.template.replace(this._regexp, (_, key) => String(options[key as keyof typeof options]));
   }
 
   public async write(options: ExtractParams<T>) {
