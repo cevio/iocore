@@ -25,6 +25,13 @@ export default class extends Boot {
     })
   }
 
+  public namespaceToArray() {
+    return Array.from(this.namespaces.entries()).map(([key, value]) => ({
+      name: key,
+      host: value,
+    }))
+  }
+
   private online() {
     this.server.bind('online', (channel, namespace: string) => {
       this.namespaces.set(namespace, channel.host);
