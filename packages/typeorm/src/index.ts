@@ -5,7 +5,7 @@ export type IOCORE_TYPEORM_CONFIGS = DataSourceOptions;
 
 @Application.Server
 export class TypeORM extends Application {
-  private conn: DataSource;
+  public conn: DataSource;
   public readonly props: IOCORE_TYPEORM_CONFIGS;
   constructor() {
     super();
