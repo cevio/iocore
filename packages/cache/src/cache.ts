@@ -5,7 +5,7 @@ import { CacheDispenser } from './impl';
 export abstract class CacheImplementer<T extends string = string, R = any> extends Component {
   private readonly _regexp = /\{([^\:]+):[^\}]+\}/g;
   private readonly _pools: INewAble<CacheDispenser<R>>[];
-  protected abstract provide(options: ExtractParams<T>): [R, number] | Promise<[R, number]>;
+  protected abstract provide(options: ExtractParams<T>): [R, number?] | Promise<[R, number?]>;
   constructor(private readonly template: T, ...pools: INewAble<CacheDispenser<R>>[]) {
     super();
     if (!pools.length) {
