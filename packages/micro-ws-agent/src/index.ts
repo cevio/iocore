@@ -169,7 +169,7 @@ export class MicroWebSocketAgent extends Application {
           get: () => this,
         },
         protocol: {
-          get: () => protocol.startsWith(':')
+          get: () => protocol.endsWith(':')
             ? protocol.substring(0, protocol.length - 1)
             : protocol,
         },
