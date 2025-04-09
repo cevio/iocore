@@ -58,7 +58,9 @@ export abstract class Configs<T extends TObject = TObject> extends Application {
   }
 
   public set<U extends keyof Static<T>>(key: U, value: Static<T>[U]) {
-    this.state.set(key, value);
+    if (this.state.has(key)) {
+      this.state.set(key, value);
+    }
     return this;
   }
 
