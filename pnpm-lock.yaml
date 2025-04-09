@@ -166,6 +166,22 @@ importers:
         specifier: ^1.10.1
         version: 1.10.1
 
+  packages/configs:
+    dependencies:
+      '@iocore/cache':
+        specifier: workspace:^
+        version: link:../cache
+      '@iocore/component':
+        specifier: workspace:^
+        version: link:../component
+      '@sinclair/typebox':
+        specifier: ^0.34.33
+        version: 0.34.33
+    devDependencies:
+      fix-esm-import-path:
+        specifier: ^1.10.1
+        version: 1.10.1
+
   packages/demodulator:
     devDependencies:
       fix-esm-import-path:
@@ -664,6 +680,9 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@sinclair/typebox@0.34.33':
+    resolution: {integrity: sha512-5HAV9exOMcXRUxo+9iYB5n09XxzCXnfy4VTNW4xnDv+FgjzAGY989C28BIdljKqmF+ZltUwujE3aossvcVtq6g==}
 
   '@sqltools/formatter@1.2.5':
     resolution: {integrity: sha512-Uy0+khmZqUrUGm5dmMqVlnvufZRSK0FbYzVgp0UMstm+F5+W2/jnEEQyc9vo1ZR/E5ZI/B1WjjoTqBqwJL6Krw==}
@@ -2181,6 +2200,8 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@sinclair/typebox@0.34.33': {}
 
   '@sqltools/formatter@1.2.5': {}
 
