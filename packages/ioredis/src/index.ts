@@ -17,10 +17,6 @@ export class IORedis extends Application {
   }
 
   public async initialize() {
-    if (!process.env.IOREDIS_CONFIGS) {
-      throw new Error('`@iocore/ioredis` miss configs: IOCORE_IOREDIS_CONFIGS');
-    }
-
     const connection = new Redis(this.props);
 
     await new Promise<void>((resolve, reject) => {
