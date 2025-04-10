@@ -22,7 +22,7 @@ export {
 
 @Application.Server
 export class MicroWebSocketAgent extends Application {
-  private readonly props: IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS;
+  public readonly props: IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS;
   private server: MicroWebSocket;
   private readonly connections = new Map<string, Channel>();
 
