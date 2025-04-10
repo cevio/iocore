@@ -7,6 +7,7 @@ export type IMiddleware = KoaMiddleware | INewAble<Middleware>;
 
 export abstract class Middleware extends Router {
   static readonly isMiddleware = true;
+  protected readonly ctx: Context;
   public abstract use(ctx: Context, next: Next): Promise<unknown>;
 
   static Dependencies(...args: IMiddleware[]) {
@@ -54,6 +55,7 @@ function transformMiddlewares(middlewares: IMiddleware[]): KoaMiddleware[] {
         const wrap = await Component.preload(current);
         const transformer = Router.getInComing(wrap);
         const cmp = await wrap.create();
+        Object.defineProperty(cmp, 'ctx', { value: ctx });
         await transformer(ctx, cmp);
         await cmp.value.use(ctx, next);
       }

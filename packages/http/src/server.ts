@@ -96,6 +96,7 @@ export class Http extends Application {
       const method = methods[i];
       this.app.on(method, url, ...middlewares, async (ctx, next) => {
         const target = await Component.create(controller);
+        Object.defineProperty(target, 'ctx', { value: ctx });
         await transformer(ctx, target);
         const res = await Promise.resolve(target.response(next));
         if (res !== undefined) {
