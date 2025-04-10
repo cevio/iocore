@@ -1,10 +1,11 @@
-import { Demodulator, IDemodulatorMessage } from "@iocore/demodulator";
+import { Demodulator, Exception, IDemodulatorMessage } from "@iocore/demodulator";
 import { WebSocket } from "ws";
 import { MicroWebSocket } from "./index";
 
 interface ChannelPostData {
   cmd: string,
-  props: any,
+  props: any[],
+  protocol: string,
 }
 
 export class Channel extends Demodulator {
@@ -31,8 +32,8 @@ export class Channel extends Demodulator {
     })
   }
 
-  public fetch(cmd: string, props: any, timeout?: number) {
-    return this.send<ChannelPostData>({ cmd, props }, timeout);
+  public fetch(protocol: string, cmd: string, props: any[], timeout?: number) {
+    return this.send<ChannelPostData>({ cmd, props, protocol }, timeout);
   }
 
   protected post<T = any>(data: IDemodulatorMessage<T>): void {
@@ -40,10 +41,14 @@ export class Channel extends Demodulator {
   }
 
   protected exec(data: ChannelPostData) {
-    if (this.server.functions.has(data.cmd)) {
-      const fn = this.server.functions.get(data.cmd);
-      return fn(this, data.props);
+    if (this.server.functions.has(data.protocol)) {
+      const protocol = this.server.functions.get(data.protocol);
+      if (protocol.has(data.cmd)) {
+        const fn = protocol.get(data.cmd);
+        return fn(this, ...data.props);
+      }
     }
+    throw new Exception(104, `Cannot find the url '${data.protocol}:/${data.cmd}'`);
   }
 
   public disconnect() {

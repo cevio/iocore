@@ -14,11 +14,12 @@ export {
   Exception,
 }
 
-type IFunction<T = any> = (channel: Channel, props: any) => T
+type IFunction<T = any> = (channel: Channel, ...args: any[]) => T
 
 export class MicroWebSocket extends EventEmitter {
   public readonly server: WebSocketServer;
-  public readonly functions = new Map<string, IFunction>();
+  //                                  协议         识别码    函数
+  public readonly functions = new Map<string, Map<string, IFunction>>();
   public readonly channels = new Map<string, Channel>();
   private readonly host = getInternalIp();
   private readonly port: number;
@@ -113,11 +114,15 @@ export class MicroWebSocket extends EventEmitter {
     }
   }
 
-  public bind<T = any>(key: string, callback: IFunction<T>) {
-    if (this.functions.has(key)) {
-      throw new Error('method [' + key + '] already exits');
+  public bind<T = any>(protocol: string, key: string, callback: IFunction<T>) {
+    if (!this.functions.has(protocol)) {
+      this.functions.set(protocol, new Map());
     }
-    this.functions.set(key, callback);
+    const _protocol = this.functions.get(protocol);
+    if (_protocol.has(key)) {
+      throw new Error('method [' + key + '] already exits on protocol ' + protocol);
+    }
+    _protocol.set(key, callback);
     return this;
   }
 

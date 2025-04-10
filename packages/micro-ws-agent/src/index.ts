@@ -1,11 +1,10 @@
-import Component, { Application, INewAble, Meta } from "@iocore/component";
 import Logger from "@iocore/logger";
 import { Channel, MicroWebSocket, Exception } from "@iocore/micro-ws";
-import { MicroWSMiddlewareNameSpace, Service } from "./service";
+import { Application, INewAble, Component } from "@iocore/component";
+import { Service } from "./service";
 import { detect } from 'detect-port';
 import { operation } from 'retry';
-import { Middleware } from "./middleware";
-import { compose, Next } from "./compose";
+import { Controller, ControllerRequest, ControllerResponse } from "./controller";
 
 export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
   registry: string,
@@ -15,9 +14,10 @@ export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
 
 export {
   Service,
+  Controller,
   Exception,
-  Next,
-  Middleware
+  ControllerRequest,
+  ControllerResponse,
 }
 
 @Application.Server
@@ -45,7 +45,7 @@ export class MicroWebSocketAgent extends Application {
 
   private async connectRegistry() {
     const registry = await this.server.use(this.props.registry);
-    const fetcher = registry.fetch('online', this.props.namespace);
+    const fetcher = registry.fetch('ws', 'online', [this.props.namespace]);
     await fetcher.response();
   }
 
@@ -74,9 +74,12 @@ export class MicroWebSocketAgent extends Application {
   }
 
   private reconnectRegistry() {
-    const oper = operation();
+    const oper = operation({
+      retries: +Infinity,
+      maxRetryTime: 10 * 60 * 1000,
+    });
     oper.attempt(i => {
-      this.logger.debug('-', 'reconnect to registry:', i);
+      this.logger.debug('[' + i + ']', 'reconnect to registry:', this.props.registry);
       this.connectRegistry().catch(e => {
         if (oper.retry(e)) {
           return;
@@ -94,7 +97,7 @@ export class MicroWebSocketAgent extends Application {
     if (!registry) {
       throw new Exception(414, 'Cannot find the registry, may be it disconnect');
     }
-    const { response } = registry.fetch('where', namespace);
+    const { response } = registry.fetch('ws', 'where', [namespace]);
     const host = await response<string>();
     if (!host) {
       throw new Exception(
@@ -115,70 +118,42 @@ export class MicroWebSocketAgent extends Application {
     this.server.close();
   }
 
-  public async fetch<T extends string, R = any>(options: {
-    url: `${T}://${string}`,
-    props: any[],
-    timeout?: number,
-    extra?: {
-      [K in T]: any
-    } & Record<string, any>
-  }) {
-    const uri = new URL(options.url);
+  public async createFetcher<R = any>(protocol: string, url: string, props: any[] = [], timeout?: number) {
+    const uri = new URL(protocol + '://' + url);
     const namespace = uri.host;
     const router = uri.pathname;
     const channel = await this.where(namespace);
-    const { response } = channel.fetch(router, {
-      props: options.props,
-      extra: options.extra || {},
-      protocol: uri.protocol,
-    }, options.timeout);
+    const { response } = channel.fetch(protocol, router, props, timeout);
     return await response<R>();
   }
 
-  public bind<P extends any[], R, T extends Service<P, R>>(url: string, clazz: INewAble<T>) {
+  public fetch<R = any>(url: string, props: any[] = [], timeout?: number) {
+    return this.createFetcher<R>('ws', url, props, timeout);
+  }
+
+  public wsBinding<T extends Service>(url: string, clazz: INewAble<T>) {
     url = url.startsWith('/') ? url : '/' + url;
-    const meta = Meta.get(clazz);
-    const middlewares: INewAble<Middleware>[] = meta.clazz.get(MicroWSMiddlewareNameSpace);
-    this.server.bind(url, async (channel, data: { props: P, extra: any, protocol: string }) => {
-      let value: R;
-      const mixin = this.mixin(channel, data.protocol, data.extra);
-      const _middlewares = (middlewares || []).map(middleware => {
-        return async (next: Next) => {
-          const target = mixin(await Component.create(middleware));
-          await target.use(next);
-        }
-      });
-      _middlewares.push(async next => {
-        const target = mixin(await Component.create(clazz));
-        value = await target.exec(...data.props);
-        await next();
-      });
-      const composed = compose(_middlewares);
-      await composed();
-      return value;
+    this.server.bind('ws', url, async (channel, ...props: any[]) => {
+      const target = await Component.create(clazz);
+      Object.defineProperty(target, 'channel', { value: channel });
+      Object.defineProperty(target, 'agent', { value: this });
+      return await Promise.resolve(target.exec(...props));
     })
   }
 
-  private mixin(channel: Channel, protocol: string, extra: any) {
-    return <T>(target: T) => {
-      Object.defineProperties(target, {
-        channel: {
-          get: () => channel,
-        },
-        agent: {
-          get: () => this,
-        },
-        protocol: {
-          get: () => protocol.endsWith(':')
-            ? protocol.substring(0, protocol.length - 1)
-            : protocol,
-        },
-        extra: {
-          get: () => extra,
-        }
-      })
-      return target;
-    }
+  public httpBinding<B, T extends Controller<B>>(url: string, clazz: INewAble<T>) {
+    url = url.startsWith('/') ? url : '/' + url;
+    this.server.bind('http', url, async (channel, request: ControllerRequest) => {
+      const target = await Component.create(clazz);
+      Object.defineProperty(target, 'channel', { value: channel });
+      Object.defineProperty(target, 'agent', { value: this });
+      Object.defineProperty(target, 'headers', { value: request.headers });
+      Object.defineProperty(target, 'query', { value: request.query });
+      Object.defineProperty(target, 'params', { value: request.params });
+      Object.defineProperty(target, 'cookie', { value: request.cookie });
+      Object.defineProperty(target, 'body', { value: request.body });
+      return await Promise.resolve(target.response());
+    })
   }
 }
 

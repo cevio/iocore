@@ -33,29 +33,22 @@ export default class extends Boot {
   }
 
   private online() {
-    this.server.bind('online', (channel, namespace: string) => {
+    this.server.bind('ws', 'online', (channel, namespace: string) => {
       this.namespaces.set(namespace, channel.host);
       this.logger.info('+', namespace, channel.host);
     })
   }
 
   private where() {
-    this.server.bind('where', (_, namespace: string) => {
+    this.server.bind('ws', 'where', (_, namespace: string) => {
       if (this.namespaces.has(namespace)) {
         return this.namespaces.get(namespace);
       }
     })
   }
 
-  public async fetch<T extends string, R = any>(options: {
-    url: `${T}://${string}`,
-    props: any[],
-    timeout?: number,
-    extra?: {
-      [K in T]: any
-    } & Record<string, any>
-  }) {
-    const uri = new URL(options.url);
+  public async createFetcher<R = any>(protocol: string, url: string, props: any[] = [], timeout?: number) {
+    const uri = new URL(protocol + '://' + url);
     const namespace = uri.host;
     const router = uri.pathname;
     if (!this.namespaces.has(namespace)) {
@@ -65,11 +58,7 @@ export default class extends Boot {
       );
     }
     const channel = await this.server.use(this.namespaces.get(namespace));
-    const { response } = channel.fetch(router, {
-      props: options.props,
-      extra: options.extra || {},
-      protocol: uri.protocol,
-    }, options.timeout);
+    const { response } = channel.fetch(protocol, router, props, timeout);
     return await response<R>();
   }
 
