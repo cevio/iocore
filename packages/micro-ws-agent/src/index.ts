@@ -75,7 +75,7 @@ export class MicroWebSocketAgent extends Application {
 
   private reconnectRegistry() {
     const oper = operation({
-      retries: +Infinity,
+      retries: 100,
       maxRetryTime: 10 * 60 * 1000,
     });
     oper.attempt(i => {
