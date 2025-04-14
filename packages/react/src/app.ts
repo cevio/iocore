@@ -6,7 +6,7 @@ import { Controller } from './controller';
 import { Exception } from './exception';
 import { Request } from './request';
 import { IStatusComponent, LocationProps, Middleware, MiddlewareType } from './types';
-import { Context, FC, PropsWithChildren, ReactNode, createContext, createElement, useContext, useEffect, useMemo, useState } from "react";
+import { Context, FC, PropsWithChildren, ReactNode, createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export class Application extends Router {
   private readonly prefix: string;
@@ -14,6 +14,7 @@ export class Application extends Router {
   private readonly middlewares = new Map<MiddlewareType, Middleware[]>();
   private readonly PrefixContext: Context<string>;
   private readonly LocationContext: Context<LocationProps>;
+  private readonly ErrorContext: Context<() => void>;
   private readonly StatusComponents = new Map<number, IStatusComponent>();
   public readonly request = new Request(this);
 
@@ -32,6 +33,7 @@ export class Application extends Router {
     } else {
       this.prefix = '';
     }
+    this.ErrorContext = createContext(() => { });
     this.PrefixContext = createContext(this.prefix);
     this.LocationContext = createContext({
       params: {},
@@ -79,6 +81,10 @@ export class Application extends Router {
     return useContext(this.LocationContext);
   }
 
+  public useErrorClear() {
+    return useContext(this.ErrorContext);
+  }
+
   private createLocationComponent(fields: LocationProps, node: ReactNode) {
     return createElement(this.LocationContext.Provider, { value: fields }, node);
   }
@@ -87,6 +93,7 @@ export class Application extends Router {
     return (props: PropsWithChildren) => {
       const [error, setError] = useState<Exception>(null);
       const [url, setUrl] = useState<string>(window.location.href);
+      const clear = useCallback(() => setError(null), [setError]);
 
       const element = useMemo(() => {
         const { pathname, query, hash } = this.transformLocation(url);
@@ -150,7 +157,9 @@ export class Application extends Router {
         {
           value: this.prefix
         },
-        element
+        createElement(this.ErrorContext.Provider, {
+          value: clear,
+        }, element)
       )
     }
   }
