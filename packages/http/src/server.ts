@@ -94,7 +94,7 @@ export class Http extends Application {
     const callbacks: (() => unknown)[] = [];
     for (let i = 0; i < methods.length; i++) {
       const method = methods[i];
-      this.app.on(method, url, ...middlewares, async (ctx, next) => {
+      this.app.on(method, url.replace(/\[([^\]]+)\]/g, ':$1'), ...middlewares, async (ctx, next) => {
         const target = await Component.create(controller);
         Object.defineProperty(target, 'ctx', { value: ctx });
         await transformer(ctx, target);
