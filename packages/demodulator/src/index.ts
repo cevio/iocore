@@ -115,19 +115,34 @@ export abstract class Demodulator {
 
   private onRequest<T = any>(msg: IDemodulatorMessage<T>) {
     Promise.race([
-      Promise.resolve(this.exec(msg.data)),
+      Promise.resolve(this.exec(msg.data)).catch(e => ({ e })),
       new Promise((_, reject) => this.aborts.set(msg.id, reject)),
     ]).then(value => {
-      if (msg.twoway) {
-        this.post({
-          id: msg.id,
-          mode: DEMODULATOR_MODE.RESPONSE,
-          twoway: false,
-          data: {
-            status: 200,
-            data: value,
-          }
-        })
+      if (value?.e) {
+        if (msg.twoway) {
+          this.post({
+            id: msg.id,
+            mode: DEMODULATOR_MODE.RESPONSE,
+            twoway: false,
+            data: {
+              status: value.e instanceof Exception ? value.e.status : 500,
+              data: null,
+              message: value.e.message,
+            }
+          })
+        }
+      } else {
+        if (msg.twoway) {
+          this.post({
+            id: msg.id,
+            mode: DEMODULATOR_MODE.RESPONSE,
+            twoway: false,
+            data: {
+              status: 200,
+              data: value,
+            }
+          })
+        }
       }
     }).catch(e => {
       if (e instanceof AbortException) return;
