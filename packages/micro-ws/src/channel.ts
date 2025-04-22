@@ -40,12 +40,12 @@ export class Channel extends Demodulator {
     this.socket.send(JSON.stringify(data));
   }
 
-  protected exec(data: ChannelPostData) {
+  protected async exec(data: ChannelPostData) {
     if (this.server.functions.has(data.protocol)) {
       const protocol = this.server.functions.get(data.protocol);
       if (protocol.has(data.cmd)) {
         const fn = protocol.get(data.cmd);
-        return fn(this, ...data.props);
+        return await Promise.resolve(fn(this, ...data.props));
       }
     }
     throw new Exception(104, `Cannot find the url '${data.protocol}:/${data.cmd}'`);

@@ -33,7 +33,7 @@ export abstract class Demodulator {
   }>();
 
   protected abstract post<T = any>(data: IDemodulatorMessage<T>): void;
-  protected abstract exec(data: any): any;
+  protected abstract exec(data: any): Promise<any>;
 
   // 创建安全的自增 ID
   private createId() {
@@ -115,7 +115,7 @@ export abstract class Demodulator {
 
   private onRequest<T = any>(msg: IDemodulatorMessage<T>) {
     Promise.race([
-      Promise.resolve(this.exec(msg.data)).catch(e => ({ e })),
+      this.exec(msg.data).catch(e => ({ e })),
       new Promise((_, reject) => this.aborts.set(msg.id, reject)),
     ]).then(value => {
       if (value?.e) {
