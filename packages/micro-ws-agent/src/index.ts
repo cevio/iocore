@@ -5,7 +5,9 @@ import { Service } from "./service";
 import { detect } from 'detect-port';
 import { operation } from 'retry';
 import { Controller, ControllerRequest, ControllerResponse } from "./controller";
-
+import { Context } from "./context";
+import { Middleware, TMiddleware, Next } from "./middleware";
+import { Router } from "./router";
 export type IOCORE_MICRO_WEBSOCKET_AGENT_CONFIGS = {
   registry: string,
   namespace: string,
@@ -18,6 +20,9 @@ export {
   Exception,
   ControllerRequest,
   ControllerResponse,
+  Middleware,
+  Context,
+  Next,
 }
 
 @Application.Server
@@ -141,19 +146,37 @@ export class MicroWebSocketAgent extends Application {
     })
   }
 
-  public httpBinding<B, T extends Controller<B>>(url: string, clazz: INewAble<T>) {
+  public async httpBinding<T extends Controller>(url: string, clazz: INewAble<T>) {
     url = url.startsWith('/') ? url : '/' + url;
+    const wrap = await Component.preload(clazz);
+    const middlewares = await Middleware.get(wrap);
+    const transformer = Router.getInComing(wrap);
+
     this.server.bind('http', url, async (channel, request: ControllerRequest) => {
-      const target = await Component.create(clazz);
-      Object.defineProperty(target, 'channel', { value: channel });
-      Object.defineProperty(target, 'agent', { value: this });
-      Object.defineProperty(target, 'headers', { value: request.headers });
-      Object.defineProperty(target, 'query', { value: request.query });
-      Object.defineProperty(target, 'params', { value: request.params });
-      Object.defineProperty(target, 'cookie', { value: request.cookie });
-      Object.defineProperty(target, 'body', { value: request.body });
-      return await Promise.resolve(target.response());
+      let value: any;
+      const controllerMiddleware: TMiddleware = async (ctx, next) => {
+        const target = await Component.create(clazz);
+        Object.defineProperty(target, 'channel', { value: channel });
+        Object.defineProperty(target, 'agent', { value: this });
+        await transformer(ctx, target);
+        value = await Promise.resolve(target.response());
+        await next();
+      }
+      const _middlewares = middlewares.concat([controllerMiddleware]);
+      const composed = Middleware.compose(_middlewares);
+      await composed(this.createContext(request));
+      return value;
     })
+  }
+
+  private createContext(request: ControllerRequest) {
+    const ctx = new Context();
+    ctx.headers = request.headers;
+    ctx.query = request.query;
+    ctx.params = request.params;
+    ctx.cookie = request.cookie;
+    ctx.body = request.body;
+    return ctx;
   }
 }
 

@@ -1,4 +1,6 @@
-import { BaseContext } from "./base";
+import { Router } from "./router";
+import { Meta } from "@iocore/component";
+import { HttpMiddlewareNameSpace, IMiddleware } from "./middleware";
 
 export interface ControllerResponse<T = any> {
   body: T,
@@ -31,12 +33,18 @@ export interface CookieSetOption {
   partitioned?: boolean | undefined;
 }
 
-export abstract class Controller<Body = any> extends BaseContext {
-  protected readonly headers: ControllerRequest<Body>['headers'];
-  protected readonly query: ControllerRequest<Body>['query'];
-  protected readonly params: ControllerRequest<Body>['params'];
-  protected readonly cookie: ControllerRequest<Body>['cookie'];
-  protected readonly body: ControllerRequest<Body>['body'];
-
+export abstract class Controller extends Router {
   public abstract response(): ControllerResponse | Promise<ControllerResponse>;
+
+  static Middleware(...args: IMiddleware[]) {
+    return Meta.createClassDecorator(HttpMiddlewareNameSpace, ({ value }) => {
+      const _value = value ?? [];
+      for (let i = 0; i < args.length; i++) {
+        if (!_value.includes(args[i])) {
+          _value.push(args[i]);
+        }
+      }
+      return _value;
+    })
+  }
 }
