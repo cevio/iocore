@@ -64,9 +64,9 @@ function transformMiddlewares(middlewares: IMiddleware[], channel: Channel, agen
       const wrap = await Component.preload(current);
       const transformer = Router.getInComing(wrap);
       const cmp = await wrap.create();
-      Object.defineProperty(cmp, 'channel', { value: channel });
-      Object.defineProperty(cmp, 'agent', { value: agent });
-      await transformer(ctx, cmp);
+      Object.defineProperty(cmp.value, 'channel', { value: channel });
+      Object.defineProperty(cmp.value, 'agent', { value: agent });
+      await transformer(ctx, cmp.value);
       await cmp.value.use(ctx, next);
     }
     return _middleware;
