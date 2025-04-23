@@ -149,11 +149,11 @@ export class MicroWebSocketAgent extends Application {
   public async httpBinding<T extends Controller>(url: string, clazz: INewAble<T>) {
     url = url.startsWith('/') ? url : '/' + url;
     const wrap = await Component.preload(clazz);
-    const middlewares = await Middleware.get(wrap);
-    const transformer = Router.getInComing(wrap);
 
     this.server.bind('http', url, async (channel, request: ControllerRequest) => {
       let value: any;
+      const middlewares = await Middleware.get(wrap, channel, this);
+      const transformer = Router.getInComing(wrap);
       const controllerMiddleware: TMiddleware = async (ctx, next) => {
         const target = await Component.create(clazz);
         Object.defineProperty(target, 'channel', { value: channel });

@@ -1,6 +1,8 @@
 import Component, { INewAble, Meta, Wrap } from "@iocore/component";
 import { Router } from "./router";
 import { Context } from './context';
+import { Channel } from "@iocore/micro-ws";
+import { MicroWebSocketAgent } from "./index";
 
 export type IMiddleware = INewAble<Middleware>;
 export const HttpMiddlewareNameSpace = Symbol('#Controller.Middleware');
@@ -22,9 +24,9 @@ export abstract class Middleware extends Router {
     })
   }
 
-  static async get(wrap: Wrap) {
+  static async get(wrap: Wrap, channel: Channel, agent: MicroWebSocketAgent) {
     const middlewares = await orderMiddlewares(wrap);
-    return transformMiddlewares(middlewares);
+    return transformMiddlewares(middlewares, channel, agent);
   }
 
   static compose(middleware: TMiddleware[]) {
@@ -55,13 +57,15 @@ async function orderMiddlewares(wrap: Wrap) {
   return Array.from(new Set(pool.concat(middlewares)).values());
 }
 
-function transformMiddlewares(middlewares: IMiddleware[]): TMiddleware[] {
+function transformMiddlewares(middlewares: IMiddleware[], channel: Channel, agent: MicroWebSocketAgent): TMiddleware[] {
   return (middlewares || []).map(middleware => {
     const current = middleware as INewAble<Middleware>;
     const _middleware: TMiddleware = async (ctx, next) => {
       const wrap = await Component.preload(current);
       const transformer = Router.getInComing(wrap);
       const cmp = await wrap.create();
+      Object.defineProperty(cmp, 'channel', { value: channel });
+      Object.defineProperty(cmp, 'agent', { value: agent });
       await transformer(ctx, cmp);
       await cmp.value.use(ctx, next);
     }
