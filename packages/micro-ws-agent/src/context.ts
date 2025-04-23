@@ -4,4 +4,5 @@ export class Context<T = any> {
   public params: Record<string, string>;
   public cookie: Record<string, string>;
   public body: T;
+  public state: Record<string, any> = {};
 }

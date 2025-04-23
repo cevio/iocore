@@ -7,6 +7,7 @@ const HttpInComingQueryNamespace = Symbol('#Controller.InComing.Query');
 const HttpInComingPathNamespace = Symbol('#Controller.InComing.Path');
 const HttpInComingCookieNamespace = Symbol('#Controller.InComing.Cookie');
 const HttpInComingBodyNamespace = Symbol('#Controller.InComing.Body');
+const HttpInComingStateNamespace = Symbol('#Controller.InComing.State');
 export class Router extends BaseContext {
   static readonly InComing = Object.freeze({
     Head(key?: string | Function, ...callbacks: Function[]) {
@@ -43,7 +44,15 @@ export class Router extends BaseContext {
     },
     Body(...callbacks: Function[]) {
       return Meta.createPropertyDecorator(HttpInComingBodyNamespace, () => callbacks);
-    }
+    },
+    State(key?: string | Function, ...callbacks: Function[]) {
+      return Meta.createPropertyDecorator(HttpInComingStateNamespace, ({ property }) => {
+        return {
+          callbacks: typeof key === 'function' ? [key].concat(callbacks) : callbacks,
+          key: typeof key === 'string' ? key : property,
+        }
+      })
+    },
   })
 
   static getInComing(wrap: Wrap<Router>) {
@@ -65,6 +74,9 @@ export class Router extends BaseContext {
         const callbacks = item.get(HttpInComingBodyNamespace);
         // @ts-ignore
         proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.body, callbacks));
+      } else if (item.has(HttpInComingStateNamespace)) {
+        const { key, callbacks } = item.get(HttpInComingStateNamespace);
+        proxy.set(property, (ctx: Context) => () => transformInComingCallbacks(ctx.state[key], callbacks));
       }
     }
     return async (ctx: Context, controller: Component) => {

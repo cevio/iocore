@@ -8,7 +8,7 @@ export type Next = () => Promise<void>;
 export type TMiddleware = (ctx: Context, next: Next) => Promise<void>;
 
 export abstract class Middleware extends Router {
-  public abstract use(next: Next): Promise<unknown>;
+  public abstract use(ctx: Context, next: Next): Promise<unknown>;
   static Dependencies(...args: IMiddleware[]) {
     return Meta.createClassDecorator<IMiddleware[]>(HttpMiddlewareNameSpace, ({ value }) => {
       const _value = value ?? [];
@@ -63,7 +63,7 @@ function transformMiddlewares(middlewares: IMiddleware[]): TMiddleware[] {
       const transformer = Router.getInComing(wrap);
       const cmp = await wrap.create();
       await transformer(ctx, cmp);
-      await cmp.value.use(next);
+      await cmp.value.use(ctx, next);
     }
     return _middleware;
   })
