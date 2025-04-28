@@ -18,7 +18,8 @@
     "new": "node scripts/new.mjs -trace-warnings",
     "add": "node scripts/install.mjs -trace-warnings",
     "cmd": "node scripts/cmd.mjs",
-    "deps": "node scripts/deps.mjs"
+    "deps": "node scripts/deps.mjs",
+    "dev": "node --loader ts-node/esm packages/component/src/test.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.28.1",

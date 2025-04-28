@@ -16,7 +16,7 @@ enum COMPONET_LIFECYCLE {
 
 export class Wrap<T extends Component = Component> extends EventEmitter {
   private readonly clazz: INewAble<T>;
-  private readonly dependencies = new Map<string | symbol, Component>();
+  private readonly dependencies = new Map<string | symbol, Wrap<any>>();
   private readonly EVENT_ONLINE_RESOLVE = 'online:resolve';
   private readonly EVENT_ONLINE_REJECT = 'online:reject';
   private readonly EVENT_OFFLINE_RESOLVE = 'offline:resolve';
@@ -141,24 +141,15 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
     for (const [property, pool] of this.meta.properties.entries()) {
       if (pool.has(Component.InjectNameSpace)) {
         const target: INewAble<Component> = pool.get(Component.InjectNameSpace);
-
-        stacks.push(Component.create(target)
-          .then(component => this.dependencies.set(property, component)));
+        stacks.push(Component.preload(target)
+          .then(wrap => this.dependencies.set(property, wrap)));
       }
     }
     return Promise.all(stacks).then(() => {
-      for (const key of this.dependencies.keys()) {
-        Object.defineProperty(this.clazz.prototype, key, {
-          get: () => this.dependencies.get(key),
-        })
-      }
-
       if (this.isSingleton) {
-        return this.create().then(component => {
-          this.context = component;
-        });
+        return this.create();
       }
-    })
+    }).then(context => this.context = context);
   }
 
   private async destroy() {
@@ -175,6 +166,25 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
     const funcs: IInjectableCallback[] = this.meta.clazz.get(Component.InjectableNameSpace) || [];
     const context = new Context(this);
     context.value = new this.clazz();
+
+    await Promise.all(Array.from(this.dependencies.entries()).map(([key, wrap]) => {
+      return new Promise<void>((resolve, reject) => {
+        if (wrap.isSingleton) {
+          Object.defineProperty(context.value, key, {
+            get: () => wrap.context.value,
+          });
+          resolve();
+        } else {
+          wrap.create().then(ctx => {
+            Object.defineProperty(context.value, key, {
+              get: () => ctx.value,
+            })
+            resolve();
+          }).catch(reject)
+        }
+      })
+    }))
+
     for (let i = 0; i < funcs.length; i++) {
       await Promise.resolve(funcs[i](context));
     }
