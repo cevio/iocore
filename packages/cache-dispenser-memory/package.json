@@ -1,6 +1,6 @@
 {
-  "name": "@iocore/cache-dispenser-momery",
-  "version": "1.0.7",
+  "name": "@iocore/cache-dispenser-memory",
+  "version": "1.0.0",
   "description": "Default Monorepo template",
   "main": "dist/index.js",
   "type": "module",

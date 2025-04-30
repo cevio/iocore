@@ -1,6 +1,6 @@
-# @iocore/cache-dispenser-momery
+# @iocore/cache-dispenser-memory
 
-[![npm version](https://badge.fury.io/js/%40iocore%2Fcache-dispenser-momery.svg)](https://badge.fury.io/js/%40iocore%2Fcache-dispenser-momery)
+[![npm version](https://badge.fury.io/js/%40iocore%2Fcache-dispenser-memory.svg)](https://badge.fury.io/js/%40iocore%2Fcache-dispenser-memory)
 
 **注意:** 包名可能是 `memory` 的拼写错误。
 
@@ -11,9 +11,9 @@ IoCore 的内存缓存分发器。
 ## 安装
 
 ```bash
-npm install @iocore/cache-dispenser-momery @iocore/cache @iocore/component --save
+npm install @iocore/cache-dispenser-memory @iocore/cache @iocore/component --save
 # or
-yarn add @iocore/cache-dispenser-momery @iocore/cache @iocore/component
+yarn add @iocore/cache-dispenser-memory @iocore/cache @iocore/component
 ```
 
 ## 依赖
@@ -27,18 +27,18 @@ yarn add @iocore/cache-dispenser-momery @iocore/cache @iocore/component
 
 ## 使用
 
-`MomeryCacheDispenser` 类是一个 IoCore `Application` 组件（因为它有 `initialize` 和 `terminate` 来管理过期检查定时器），通常作为其他需要缓存的组件（如 `@iocore/configs`）的依赖项注入。
+`memoryCacheDispenser` 类是一个 IoCore `Application` 组件（因为它有 `initialize` 和 `terminate` 来管理过期检查定时器），通常作为其他需要缓存的组件（如 `@iocore/configs`）的依赖项注入。
 
 ```typescript
 import { Application } from '@iocore/component';
 import { CacheDispenser } from '@iocore/cache';
-import MomeryCacheDispenser from '@iocore/cache-dispenser-momery';
+import memoryCacheDispenser from '@iocore/cache-dispenser-memory';
 
 // 模拟一个需要缓存的服务
 @Application.Injectable()
 class MyCachedService extends Component {
   // 注入内存缓存分发器
-  @Application.Inject(MomeryCacheDispenser)
+  @Application.Inject(memoryCacheDispenser)
   private cache: CacheDispenser<string>; // 类型参数 R 定义了缓存值的类型
 
   private async expensiveOperation(userId: number): Promise<string> {
@@ -72,8 +72,8 @@ class MyCachedService extends Component {
 }
 
 // 启动应用
-// 确保 MomeryCacheDispenser 被 IoCore 管理
-@Application.Inject(MomeryCacheDispenser, MyCachedService)
+// 确保 memoryCacheDispenser 被 IoCore 管理
+@Application.Inject(memoryCacheDispenser, MyCachedService)
 class BootApp extends Application {
   @Application.Inject(MyCachedService)
   service: MyCachedService;
@@ -99,7 +99,7 @@ class BootApp extends Application {
 Application.start(BootApp);
 ```
 
-### `MomeryCacheDispenser<R = any>` 类
+### `memoryCacheDispenser<R = any>` 类
 
 继承自 `CacheDispenser`。
 

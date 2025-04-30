@@ -2,7 +2,7 @@ import { CacheDispenser } from "@iocore/cache";
 import { Application } from "@iocore/component";
 
 @Application.Server
-export class MomeryCacheDispenser<R = any> extends CacheDispenser {
+export class MemoryCacheDispenser<R = any> extends CacheDispenser {
   private readonly stacks = new Map<string, { data: any, expire: number }>();
 
   private timer: NodeJS.Timeout;
@@ -68,4 +68,4 @@ export class MomeryCacheDispenser<R = any> extends CacheDispenser {
   }
 }
 
-export default MomeryCacheDispenser;
+export default MemoryCacheDispenser;
