@@ -185,9 +185,54 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
       })
     }))
 
+    this.resolveWatchers(context.value);
+
     for (let i = 0; i < funcs.length; i++) {
       await Promise.resolve(funcs[i](context));
     }
+
     return context;
+  }
+
+  private resolveWatchers(component: T) {
+    const Watchers = new Map<string | Symbol, Set<string | Symbol>>();
+
+    for (const [key, widgets] of this.meta.properties.entries()) {
+      if (widgets.has(Component.StateNameSpace) && widgets.get(Component.StateNameSpace)) {
+        if (this.dependencies.has(key)) continue;
+        if (!Watchers.has(key)) {
+          Watchers.set(key, new Set());
+        }
+      }
+    }
+
+    for (const [key, widgets] of this.meta.methods.entries()) {
+      if (widgets.has(Component.WatchNameSpace)) {
+        const watcher: string | symbol = widgets.get(Component.WatchNameSpace);
+        if (!Watchers.has(watcher)) continue;
+        Watchers.get(watcher).add(key);
+      }
+    }
+
+    for (const [key, watchers] of Watchers.entries()) {
+      this.createFunctionExcution(component, key as keyof T, watchers);
+    }
+  }
+
+  private createFunctionExcution(component: T, key: keyof T, watchers: Set<string | Symbol>) {
+    let value = component[key];
+    Object.defineProperty(component, key, {
+      get: () => value,
+      set: (v: any) => {
+        if (value === v) return;
+        const oldValue = value;
+        value = v;
+        for (const method of watchers.values()) {
+          const fn = component[method as keyof T] as (newValue: any, oldValue: any) => void;
+          if (typeof fn !== 'function') continue;
+          fn(v, oldValue);
+        }
+      }
+    })
   }
 }
