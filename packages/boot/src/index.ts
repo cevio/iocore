@@ -52,8 +52,7 @@ export abstract class Boot extends Application {
     }) => unknown | Promise<unknown>,
   ) {
     const files = await glob(`**/*.${suffix}.{ts,js}`, { cwd: directory });
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    await Promise.all(files.map(async file => {
       const path = resolve(directory, file);
       const url = file.substring(0, file.length - suffix.length - 4);
       const target: { default: INewAble<T> } = await await import(resolve(directory, file));
@@ -66,7 +65,7 @@ export abstract class Boot extends Application {
           }));
         }
       }
-    }
+    }))
   }
 }
 
