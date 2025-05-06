@@ -25,3 +25,5 @@ attachments
 dev.ts
 wechat.configs.json
 dist
+logs
+.changeset
