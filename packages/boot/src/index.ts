@@ -55,14 +55,17 @@ export abstract class Boot extends Application {
     await Promise.all(files.map(async file => {
       const path = resolve(directory, file);
       const url = file.substring(0, file.length - suffix.length - 4);
-      const target: { default: INewAble<T> } = await await import(resolve(directory, file));
+      const target: { default: INewAble<T> | INewAble<T>[] } = await await import(resolve(directory, file));
       if (target.default) {
-        const wrap = await Application.preload(target.default);
-        if (typeof callback === 'function') {
-          await Promise.resolve(callback({
-            file, wrap, path, url,
-            clazz: target.default,
-          }));
+        const value = Array.isArray(target.default) ? target.default : [target.default];
+        for (let i = 0; i < value.length; i++) {
+          const wrap = await Application.preload(value[i]);
+          if (typeof callback === 'function') {
+            await Promise.resolve(callback({
+              file, wrap, path, url,
+              clazz: value[i],
+            }));
+          }
         }
       }
     }))
