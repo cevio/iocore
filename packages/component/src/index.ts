@@ -1,4 +1,4 @@
-import { Component, IInjectableCallback } from './component';
+import { Component, IInjectableCallback, IInjectExtraFunction } from './component';
 import { Meta } from './meta';
 import { Application } from './application';
 import { Context } from './context';
@@ -16,4 +16,5 @@ export {
 export type * from './types';
 export type {
   IInjectableCallback,
+  IInjectExtraFunction,
 }

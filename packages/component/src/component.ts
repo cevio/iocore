@@ -5,6 +5,8 @@ import { Wrap } from "./wrap";
 
 export const NativeComponents = new Map<INewAble, Wrap>();
 export type IInjectableCallback<T extends Component = Component> = (ctx: Context<T>) => unknown;
+export type IInjectExtraFunction<T extends Component = Component, U extends Component = Component> =
+  (a: T, b?: U, c?: string | symbol) => unknown | Promise<unknown>;
 
 export class Component {
   static readonly InjectNameSpace = Symbol('#Component:Inject');
@@ -14,8 +16,8 @@ export class Component {
   static readonly WatchNameSpace = Symbol('#Component:Watch');
   static readonly Singleton = Meta.createClassDecorator(Component.SingletonNameSpace, () => true);
 
-  static Inject<T extends Component>(clazz: INewAble<T>) {
-    return Meta.createPropertyDecorator(Component.InjectNameSpace, () => clazz);
+  static Inject<T extends Component>(clazz: INewAble<T>, fn?: IInjectExtraFunction) {
+    return Meta.createPropertyDecorator(Component.InjectNameSpace, () => [clazz, fn]);
   }
 
   static Injectable<T extends Component = Component>(callback?: IInjectableCallback<T>) {

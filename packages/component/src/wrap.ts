@@ -1,4 +1,4 @@
-import { Component, IInjectableCallback } from './component';
+import { Component, IInjectableCallback, IInjectExtraFunction } from './component';
 import { Meta } from './meta';
 import { INewAble } from './types';
 import { EventEmitter } from './events';
@@ -16,7 +16,7 @@ enum COMPONET_LIFECYCLE {
 
 export class Wrap<T extends Component = Component> extends EventEmitter {
   private readonly clazz: INewAble<T>;
-  private readonly dependencies = new Map<string | symbol, Wrap<any>>();
+  private readonly dependencies = new Map<string | symbol, [Wrap<any>, IInjectExtraFunction?]>();
   private readonly EVENT_ONLINE_RESOLVE = 'online:resolve';
   private readonly EVENT_ONLINE_REJECT = 'online:reject';
   private readonly EVENT_OFFLINE_RESOLVE = 'offline:resolve';
@@ -140,9 +140,9 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
     const stacks: Promise<any>[] = [];
     for (const [property, pool] of this.meta.properties.entries()) {
       if (pool.has(Component.InjectNameSpace)) {
-        const target: INewAble<Component> = pool.get(Component.InjectNameSpace);
-        stacks.push(Component.preload(target)
-          .then(wrap => this.dependencies.set(property, wrap)));
+        const target: [INewAble<Component>, IInjectExtraFunction] = pool.get(Component.InjectNameSpace);
+        stacks.push(Component.preload(target[0])
+          .then(wrap => this.dependencies.set(property, [wrap, target[1]])));
       }
     }
     return Promise.all(stacks).then(() => {
@@ -167,7 +167,7 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
     const context = new Context(this);
     context.value = new this.clazz();
 
-    await Promise.all(Array.from(this.dependencies.entries()).map(([key, wrap]) => {
+    await Promise.all(Array.from(this.dependencies.entries()).map(([key, [wrap, fn]]) => {
       return new Promise<void>((resolve, reject) => {
         if (wrap.isSingleton) {
           Object.defineProperty(context.value, key, {
@@ -178,9 +178,14 @@ export class Wrap<T extends Component = Component> extends EventEmitter {
           wrap.create().then(ctx => {
             Object.defineProperty(context.value, key, {
               get: () => ctx.value,
-            })
-            resolve();
-          }).catch(reject)
+            });
+
+            if (fn) {
+              return Promise.resolve(
+                fn(ctx.value, context.value, key)
+              );
+            }
+          }).then(resolve).catch(reject);
         }
       })
     }))
