@@ -1,6 +1,7 @@
 import { Router } from "./router";
-import { Meta } from "@iocore/component";
+import Component, { Meta } from "@iocore/component";
 import { HttpMiddlewareNameSpace, IMiddleware } from "./middleware";
+import { Service } from "./service";
 
 export interface ControllerResponse<T = any> {
   body: T,
@@ -46,5 +47,25 @@ export abstract class Controller extends Router {
       }
       return _value;
     })
+  }
+
+  protected compatible<T extends Service>(target: T) {
+    if (target instanceof Service) {
+      // @ts-ignore
+      if (!target.channel) {
+        Object.defineProperty(target, 'channel', {
+          value: this.channel
+        });
+      }
+
+      // @ts-ignore
+      if (!target.agent) {
+        Object.defineProperty(target, 'agent', {
+          value: this.agent
+        });
+      }
+    }
+
+    return target;
   }
 }
