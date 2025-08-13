@@ -1,6 +1,6 @@
 {
   "name": "@iocore/micro-ws-agent",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "Default Monorepo template",
   "main": "dist/index.js",
   "type": "module",

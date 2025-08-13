@@ -1,5 +1,5 @@
 import { Router } from "./router";
-import Component, { Meta } from "@iocore/component";
+import Component, { INewAble, Meta } from "@iocore/component";
 import { HttpMiddlewareNameSpace, IMiddleware } from "./middleware";
 import { Service } from "./service";
 
@@ -49,19 +49,37 @@ export abstract class Controller extends Router {
     })
   }
 
+  static Invoke<T extends Component>(clazz: INewAble<T>) {
+    return Controller.Inject(clazz, (a: T, b: Controller) => {
+      // @ts-ignore
+      if (!a.channel) {
+        Object.defineProperty(a, 'channel', {
+          get: () => b.channel,
+        });
+      }
+
+      // @ts-ignore
+      if (!a.agent) {
+        Object.defineProperty(a, 'agent', {
+          get: () => b.agent,
+        });
+      }
+    })
+  }
+
   protected compatible<T extends Service>(target: T) {
     if (target instanceof Service) {
       // @ts-ignore
       if (!target.channel) {
         Object.defineProperty(target, 'channel', {
-          value: this.channel
+          get: () => this.channel
         });
       }
 
       // @ts-ignore
       if (!target.agent) {
         Object.defineProperty(target, 'agent', {
-          value: this.agent
+          get: () => this.agent
         });
       }
     }
